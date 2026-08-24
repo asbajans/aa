@@ -1,0 +1,45 @@
+{
+  "common": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "dashboard": "Dashboard",
+    "classes": "Classes",
+    "teachers": "Teachers",
+    "credits": "Credits",
+    "packages": "Packages"
+  },
+  "landing": {
+    "heroTitle": "24/7 Private Tutoring with Your Teacher's AI Clone",
+    "heroSubtitle": "Live classes + unlimited practice with an AI clone trained on your teacher's voice, style and tips.",
+    "ctaStudent": "Start as Student",
+    "ctaTeacher": "Start Earning as Teacher",
+    "features": {
+      "live": "Live Classes (max 10)",
+      "aiClone": "AI Teacher Clone",
+      "credits": "Flexible Credits",
+      "payout": "Transparent Payouts"
+    }
+  },
+  "auth": {
+    "roleStudent": "I am a Student",
+    "roleTeacher": "I am a Teacher",
+    "kvkk": "I have read and approve the consent texts."
+  },
+  "teacher": {
+    "createClass": "Create Class",
+    "aiStudio": "AI Clone Studio",
+    "earnings": "Earnings"
+  },
+  "student": {
+    "findClass": "Find Class",
+    "myClasses": "My Classes",
+    "aiChat": "Study with AI Clone"
+  },
+  "superadmin": {
+    "users": "Users",
+    "payouts": "Payouts",
+    "packages": "Packages",
+    "aiModeration": "AI Approvals"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "common": {
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "logout": "Cerrar sesión",
+    "dashboard": "Panel",
+    "classes": "Clases",
+    "teachers": "Profesores",
+    "credits": "Créditos",
+    "packages": "Paquetes"
+  },
+  "landing": {
+    "heroTitle": "Tutoría 24/7 con el Clon IA de tu Profesor",
+    "heroSubtitle": "Clases en vivo + práctica ilimitada con un clon de IA entrenado con la voz y el estilo de tu profesor.",
+    "ctaStudent": "Empezar como Estudiante",
+    "ctaTeacher": "Empezar a Ganar como Profesor",
+    "features": {
+      "live": "Clases en Vivo (máx 10)",
+      "aiClone": "Clon de Profesor IA",
+      "credits": "Créditos Flexibles",
+      "payout": "Pagos Transparentes"
+    }
+  },
+  "auth": {
+    "roleStudent": "Soy Estudiante",
+    "roleTeacher": "Soy Profesor",
+    "kvkk": "He leído y acepto los textos de consentimiento."
+  },
+  "teacher": {
+    "createClass": "Crear Clase",
+    "aiStudio": "Estudio de Clon IA",
+    "earnings": "Ganancias"
+  },
+  "student": {
+    "findClass": "Buscar Clase",
+    "myClasses": "Mis Clases",
+    "aiChat": "Estudiar con Clon IA"
+  },
+  "superadmin": {
+    "users": "Usuarios",
+    "payouts": "Pagos",
+    "packages": "Paquetes",
+    "aiModeration": "Aprobaciones IA"
+  }
+}

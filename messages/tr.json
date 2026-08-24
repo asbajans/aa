@@ -1,0 +1,45 @@
+{
+  "common": {
+    "login": "Giriş Yap",
+    "register": "Kayıt Ol",
+    "logout": "Çıkış Yap",
+    "dashboard": "Panel",
+    "classes": "Sınıflar",
+    "teachers": "Öğretmenler",
+    "credits": "Krediler",
+    "packages": "Paketler"
+  },
+  "landing": {
+    "heroTitle": "Öğretmeninin AI Klonuyla 7/24 Özel Ders",
+    "heroSubtitle": "LGS ve YKS'de kesintisiz canlı ders + öğretmeninin sesiyle, tarzıyla, püf noktalarıyla eğittiğin yapay zeka klonundan sınırsız pratik.",
+    "ctaStudent": "Öğrenci Olarak Başla",
+    "ctaTeacher": "Öğretmen Olarak Kazanmaya Başla",
+    "features": {
+      "live": "Kesintisiz Canlı Ders (max 10 kişi)",
+      "aiClone": "AI Öğretmen Klonu",
+      "credits": "Esnek Kredi & Paket Sistemi",
+      "payout": "Şeffaf Hakediş"
+    }
+  },
+  "auth": {
+    "roleStudent": "Öğrenciyim (LGS/YKS)",
+    "roleTeacher": "Öğretmenim",
+    "kvkk": "KVKK Aydınlatma Metnini ve Ses Klonlama İzin Metnini okudum, onaylıyorum."
+  },
+  "teacher": {
+    "createClass": "Sınıf Oluştur",
+    "aiStudio": "AI Klon Stüdyosu",
+    "earnings": "Kazançlarım"
+  },
+  "student": {
+    "findClass": "Sınıf Bul",
+    "myClasses": "Sınıflarım",
+    "aiChat": "AI Klonla Çalış"
+  },
+  "superadmin": {
+    "users": "Kullanıcılar",
+    "payouts": "Hakedişler",
+    "packages": "Paket Yönetimi",
+    "aiModeration": "AI Klon Onayları"
+  }
+}

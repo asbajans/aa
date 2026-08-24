@@ -1,0 +1,28 @@
+# next
+.next
+out
+build
+dist
+
+# deps
+node_modules
+
+# env
+.env
+.env.local
+
+# db
+drizzle/*.sql
+
+# mobile
+mobile/node_modules
+mobile/.expo
+mobile/dist
+
+# logs
+logs
+*.log
+
+# os
+.DS_Store
+Thumbs.db

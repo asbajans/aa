@@ -1,8 +1,17 @@
+import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { auth } from "@/lib/auth";
 
-export default function AIKlonStudio() {
+export default async function AIKlonStudio() {
+  const session = await auth.api.getSession({ headers: await headers() }).catch(() => null);
+  if (!session?.user) redirect("/giris");
+  if (session.user.role !== "teacher" && session.user.role !== "superadmin") {
+    redirect(session.user.role === "superadmin" ? "/superadmin" : "/ogrenci");
+  }
+
   return (
     <div className="space-y-6">
       <div>

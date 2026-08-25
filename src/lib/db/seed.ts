@@ -9,9 +9,6 @@ async function hashPassword(pw: string) {
 }
 
 async function upsertUser(opts: { email: string; name: string; role: "student" | "teacher" | "superadmin"; password: string }) {
-  const existing = await db.query?.users?.findFirst?.({ where: (u: any, { eq }: any) => eq(u.email, opts.email) } as any).catch(() => null);
-  // Fallback raw query if query API not available
-  // Try insert, on conflict do nothing then select
   const id = nanoid();
   const hashed = await hashPassword(opts.password);
   try {

@@ -47,17 +47,36 @@ ingress:
 
 > Tüm dış portlar 4000–4200 aralığında. Portainer’de Stack deploy ederken host’ta bu portların boş olduğu kontrol edilmeli (Zencook 3000, Barbers 3300 ile çakışmaz). `docker-compose.yml:1` tek kaynak.
 
-## 1) Yapılanlar (Done) — commit `ea50767` + port güncellemesi
+## 1) Yapılanlar (Done) — commit `ea50767` + port + landing fix
 
-- [x] **Proje iskeleti:** `create-next-app@16.3.2` (Next.js 16 + Tailwind 4 + TS) → `C:/Users/EXCALIBUR/Documents/Akademi`, `package.json:1`, `next.config.ts:1` (`output: standalone`, `next-intl` plugin), `middleware.ts:1` (locale routing)
-- [x] **Docker & Deploy:** `Dockerfile:1` (multi-stage, `standalone` → `server.js`), `docker-compose.yml:1` (web+db+redis+livekit, healthcheck, `akademi-network`, portlar 4000–4200), `livekit/livekit.yaml:1` (max_participants 10, rtc 50000-50194), `.env.example:1`
+- [x] **Proje iskeleti:** `create-next-app@16.3.2` (Next.js 16 + Tailwind 4 + TS) → `C:/Users/EXCALIBUR/Documents/Akademi`, `package.json:1`, `next.config.ts:1` (`output: standalone`), `middleware.ts` **geçici kaldırıldı** (next-intl 404 veriyordu — `src/i18n/routing.ts:3` `localePrefix: never` ile beklemede, EN/ES için `[locale]` klasörü kurulunca aktif edilecek)
+- [x] **Docker & Deploy:** `Dockerfile:1` (multi-stage, `standalone` → `server.js`), `docker-compose.yml:1` (web+db+redis+livekit, healthcheck, `akademi-network`, portlar 4000–4200), `livekit/livekit.yaml:1` (max_participants 10, rtc 50000-50194), `.env.example:1`, `.github/workflows/deploy.yml:1` (Portainer webhook, `PORTAINER_WEBHOOK_URL` secret)
+- [x] **Fix 404:** `akademi.biz.tr` 404 → `src/app/page.tsx:1` `○ /` static'e döndü (next-intl `Header` `Link` → `next/link`, `withNextIntl` kaldırıldı), `src/app/[locale]` boş klasör silindi — health `200`, landing `200` doğrulandı (local 4014)
+- [x] **Landing (High-Tech):** `src/app/page.tsx:1` tamamen yenilendi — dark `#030712`, grid + violet/cyan orbs, glassmorphism, waveform, RAG/TTS badge’leri, 195 katılımcı / max 10 / 7-24 stat’ları, teknoloji bar (LiveKit/OpenRouter/pgvector/R2/Expo), 6 modül kartı, 3 adım, LGS/YKS branşları, CTA. `src/components/Header.tsx:1` + `Footer.tsx:1` dark high-tech, `src/app/globals.css:1` grid/glow
 - [x] **DB:** `src/lib/db/schema.ts:1` (pgvector 1536, `userRoleEnum`, `classes` kapasite 10, `packages/creditTransactions/userCredits/payments`, `wallets/ledgerEntries/payouts/payoutSettings`, `aiClones/aiKnowledgeChunks/aiInteractions`, `assignments/submissions/reviews/notifications`), `drizzle.config.ts:1`, `scripts/init-db.sql:1`, `src/lib/db/seed.ts:1` (LGS/YKS 8 branş + 4 paket + payout ayarları)
-- [x] **Auth & i18n:** `src/lib/auth.ts:1` (better-auth + drizzleAdapter, 7 gün session), `src/i18n/routing.ts:1`/`request.ts:1`/`navigation.ts:1`, `messages/tr.json:1` + `en/es` hazır, `middleware.ts:1` `localePrefix: as-needed` (tr prefix yok)
-- [x] **Web UI:** `src/app/page.tsx:1` (landing AI klon demosu), `src/app/(auth)/giris|kayit/page.tsx:1`, `src/app/(dashboard)/ogrenci|ogretmen|superadmin/page.tsx:1`, `src/app/(dashboard)/ogretmen/ai-klon/page.tsx:1` (4 adımlı Stüdyo), `src/app/kesfet|paketler|kvkk/page.tsx:1`, `src/app/(dashboard)/canli/page.tsx:1` + `src/components/livekit/LiveRoom.tsx:1` + `src/lib/livekit.ts:1` + `src/app/api/livekit/token/route.ts:1` (AccessToken, `roomAdmin` öğretmene), `src/components/Header.tsx:1`/`Footer.tsx:1`, `src/components/ui/*`
+- [x] **Auth & i18n (beklemede):** `src/lib/auth.ts:1` (better-auth + drizzleAdapter, 7 gün session), `src/i18n/routing.ts:1`/`request.ts:1`/`navigation.ts:1`, `messages/tr.json:1` + `en/es` hazır — **aktif değil**, landing düzelsin diye `next.config.ts` sadeleştirildi
+- [x] **Web UI:** `src/app/(auth)/giris|kayit/page.tsx:1`, `src/app/(dashboard)/ogrenci|ogretmen|superadmin/page.tsx:1`, `src/app/(dashboard)/ogretmen/ai-klon/page.tsx:1` (4 adımlı Stüdyo), `src/app/kesfet|paketler|kvkk/page.tsx:1`, `src/app/(dashboard)/canli/page.tsx:1` + `src/components/livekit/LiveRoom.tsx:1` + `src/lib/livekit.ts:1` + `src/app/api/livekit/token/route.ts:1` (AccessToken, `roomAdmin` öğretmene), `src/components/ui/*`
 - [x] **AI:** `src/lib/ai/openrouter.ts:1` (OpenRouter gateway, model pricing tablosu, `gpt-4o-mini` default / `gemini-2.0-flash` cheap / `deepseek-chat` F/P, TTS `/audio/speech` `gpt-4o-mini-tts` ~$0.015/1k karakter, STT Whisper placeholder, `buildRagPrompt`), `src/lib/ai/client.ts:1` (embedding → pgvector `<=>` → RAG → fallback model), `src/app/api/ai/chat/route.ts:1`
 - [x] **Ödeme & Hakediş:** `src/lib/payments/index.ts:1` (manual + iyzico/paytr/stripe mock, `nextPayoutDate/calcPayout`), `src/app/api/payments/create/route.ts:1` + `src/app/api/credits/add/route.ts:1` (SuperAdmin manuel)
 - [x] **Mobile:** `mobile/App.js:1` (Expo 57, `expo-camera`/`expo-av`/`expo-image-picker`/`livekit-client`, izinler `mobile/app.json:1` `tr.biz.akademi`, kamera → vision, ses → STT→TTS, LiveKit RN), `npm install` yapıldı
-- [x] **Diğer:** `README.md:1`, `.gitignore:1`, `next build` 19 route success, `git init` + `git remote` (aşağıda)
+- [x] **Diğer:** `README.md:1`, `.gitignore:1`, `next build` 19 route success, `eslint` 0 error (mobile ignore), `git remote` `asbajans/aa` `master` (`3401d81` → bu commit)
+
+### Panel Adresleri (Doğrulandı — `next build` route listesi)
+
+| Panel / Sayfa | URL | Dosya |
+|---|---|---|
+| **Landing** | `https://akademi.biz.tr/` | `src/app/page.tsx:1` (high-tech, ○ static) |
+| **Giriş** | `/giris` | `src/app/(auth)/giris/page.tsx:1` |
+| **Kayıt** | `/kayit` + `?role=student|teacher` | `src/app/(auth)/kayit/page.tsx:1` |
+| **Öğrenci** | `/ogrenci` | `src/app/(dashboard)/ogrenci/page.tsx:1` |
+| **Öğretmen** | `/ogretmen` | `src/app/(dashboard)/ogretmen/page.tsx:1` |
+| **AI Stüdyo** | `/ogretmen/ai-klon` | `src/app/(dashboard)/ogretmen/ai-klon/page.tsx:1` |
+| **SüperAdmin** | `/superadmin` | `src/app/(dashboard)/superadmin/page.tsx:1` |
+| **Canlı** | `/canli?room=xxx` | `src/app/(dashboard)/canli/page.tsx:1` |
+| **Keşfet** | `/kesfet` | `src/app/kesfet/page.tsx:1` |
+| **Paketler** | `/paketler` | `src/app/paketler/page.tsx:1` |
+| **KVKK** | `/kvkk` | `src/app/kvkk/page.tsx:1` |
+| **Health** | `/api/health` | `src/app/api/health/route.ts:1` |
 
 ## 2) Yapılacaklar (TODO) — öncelik sırasıyla
 
@@ -103,7 +122,7 @@ ingress:
 - **Ödeme:** İlk faz manuel (`POST /api/credits/add` SuperAdmin), otomatik webhook’lar hazır ama sandbox’ta test etmeden prod’a alma.
 - **KVKK:** Ses klon için `voiceConsentAt/voiceConsentVersion` + `kvkkConsentAt` zorunlu, SuperAdmin onayı olmadan `aiClones.status != approved` yayın yok (`src/app/(dashboard)/ogretmen/ai-klon/page.tsx:1` uyarı).
 - **Deploy:** Portainer Stack → GitHub `asbajans/aa` → `docker-compose.yml`. `.env` asla commitlenmez, Portainer env’de.
-- **Next.js:** `output: standalone` korunmalı (`next.config.ts:1`), `Dockerfile:1` buna göre. `middleware.ts:1` `next-intl` routing’i bozma.
+- **Next.js:** `output: standalone` korunmalı (`next.config.ts:1`), `Dockerfile:1` buna göre. `middleware.ts` **şu an yok** (next-intl 404 fix için kaldırıldı), EN/ES aktif edilirken `src/app/[locale]` klasörü + `middleware.ts` + `withNextIntl` geri eklenecek.
 - **Mobile:** Expo 57 docs’a göre (`mobile/AGENTS.md:1`), `docs.expo.dev/versions/v57.0.0/` oku. İzin metinleri Türkçe olmalı (`mobile/app.json:1`).
 - **Git:** Remote `origin` → `https://github.com/asbajans/aa.git`, branch `master` (ilk commit `ea50767`). Push öncesi `npm run build` success kontrolü.
 

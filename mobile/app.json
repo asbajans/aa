@@ -6,20 +6,19 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "splash": { "backgroundColor": "#0a0a0a", "resizeMode": "contain", "image": "./assets/icon.png" },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "tr.biz.akademi",
       "infoPlist": {
         "NSCameraUsageDescription": "Soru fotoğrafı çekmek ve canlı derse katılmak için kamera izni gerekli.",
-        "NSMicrophoneUsageDescription": "Canlı derste ve AI klonla sesli çalışmak için mikrofon izni gerekli."
+        "NSMicrophoneUsageDescription": "Canlı derste ve Akademi Klonunla sesli çalışmak için mikrofon izni gerekli."
       }
     },
     "android": {
       "package": "tr.biz.akademi",
       "permissions": ["CAMERA", "RECORD_AUDIO", "android.permission.CAMERA", "android.permission.RECORD_AUDIO"],
       "adaptiveIcon": {
-        "backgroundColor": "#0a0a0a",
+        "backgroundColor": "#030712",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -35,10 +34,13 @@
         "expo-av",
         { "microphonePermission": "Sesli ders için mikrofon izni." }
       ],
-      ["expo-image-picker", { "photosPermission": "Galeri erişimi" }]
+      ["expo-image-picker", { "photosPermission": "Galeri erişimi" }],
+      ["expo-splash-screen", { "backgroundColor": "#030712", "image": "./assets/icon.png", "imageWidth": 200 }]
     ],
     "extra": {
-      "apiUrl": "https://akademi.biz.tr"
-    }
+      "apiUrl": "https://akademi.biz.tr",
+      "eas": { "projectId": "REPLACE_WITH_EAS_PROJECT_ID" }
+    },
+    "owner": "REPLACE_WITH_EXPO_USERNAME"
   }
 }

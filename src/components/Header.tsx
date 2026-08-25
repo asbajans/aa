@@ -1,14 +1,16 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#030712]/70 backdrop-blur-xl">
       <div className="mx-auto flex h-[64px] max-w-[1280px] items-center justify-between px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-[#030712] shadow-[0_0_20px_rgba(139,92,246,0.4)]">
-            <GraduationCap size={20} />
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white p-1.5 shadow-[0_0_20px_rgba(139,92,246,0.4)] overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="akademi.biz.tr" className="h-full w-full object-contain" />
           </span>
           <span className="text-[17px] font-bold tracking-tight text-white">akademi<span className="font-normal text-white/60">.biz.tr</span></span>
           <span className="hidden md:inline-flex items-center gap-1 rounded-full border border-violet-500/30 bg-violet-500/10 px-2.5 py-1 text-[11px] font-medium text-violet-300">

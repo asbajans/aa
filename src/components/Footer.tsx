@@ -8,7 +8,7 @@ export function Footer() {
         <div className="grid md:grid-cols-4 gap-8 text-sm">
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 text-white font-bold">
-              <span className="h-8 w-8 grid place-items-center rounded-lg bg-white text-[#030712]"><GraduationCap size={16} /></span>
+              <span className="h-8 w-8 grid place-items-center rounded-lg bg-white p-1 overflow-hidden"><img src="/logo.png" alt="akademi.biz.tr" className="h-full w-full object-contain" /></span>
               akademi.biz.tr
             </div>
             <div className="mt-3 text-zinc-400 leading-relaxed">

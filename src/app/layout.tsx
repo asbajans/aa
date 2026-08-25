@@ -5,6 +5,13 @@ export const metadata: Metadata = {
   title: "akademi.biz.tr — Akademi Klonuyla LGS & YKS",
   description: "Canlı ders + öğretmeninin sesiyle ve tarzıyla 7/24 Akademi Klonu özel ders. LGS ve YKS için kesintisiz online akademi.",
   metadataBase: new URL("https://akademi.biz.tr"),
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/logo.png", type: "image/png" },
+    ],
+    apple: [{ url: "/logo.png" }],
+  },
   openGraph: {
     title: "akademi.biz.tr",
     description: "Akademi Klonuyla LGS & YKS",

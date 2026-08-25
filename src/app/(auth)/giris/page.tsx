@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { GraduationCap, X } from "lucide-react";
+import { X } from "lucide-react";
 
 export default function GirisPage() {
   return (
@@ -16,7 +16,7 @@ export default function GirisPage() {
         </Link>
         <CardHeader>
           <div className="flex items-center gap-2 text-sm font-bold">
-            <span className="h-8 w-8 grid place-items-center rounded-lg bg-zinc-900 text-white"><GraduationCap size={16} /></span>
+            <span className="h-8 w-8 grid place-items-center rounded-lg bg-white border border-zinc-200 p-1 overflow-hidden"><img src="/logo.png" alt="logo" className="h-full w-full object-contain" /></span>
             akademi<span className="text-zinc-400">.biz.tr</span>
           </div>
           <CardTitle className="mt-4 text-zinc-900">Giriş Yap</CardTitle>

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { GraduationCap, X, Sparkles, ShieldCheck } from "lucide-react";
+import { X, Sparkles, ShieldCheck } from "lucide-react";
 
 export default async function KayitPage({ searchParams }: { searchParams: Promise<{ role?: string }> }) {
   const { role: roleRaw } = await searchParams;
@@ -20,7 +20,7 @@ export default async function KayitPage({ searchParams }: { searchParams: Promis
         </Link>
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2 text-sm font-bold">
-            <span className="h-8 w-8 grid place-items-center rounded-lg bg-zinc-900 text-white"><GraduationCap size={16} /></span>
+            <span className="h-8 w-8 grid place-items-center rounded-lg bg-white border border-zinc-200 p-1 overflow-hidden"><img src="/logo.png" alt="logo" className="h-full w-full object-contain" /></span>
             akademi<span className="text-zinc-400">.biz.tr</span>
             <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-violet-50 border border-violet-200 px-2 py-0.5 text-xs font-medium text-violet-700">
               <Sparkles size={11} /> AKADEMİ KLONU

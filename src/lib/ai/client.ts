@@ -1,7 +1,6 @@
 // Yüksek seviye AI client — chat + RAG + maliyet takibi
 import { chatCompletion, generateEmbedding, RECOMMENDED } from "./openrouter";
 import { db } from "@/lib/db";
-import { aiKnowledgeChunks } from "@/lib/db/schema";
 import { sql } from "drizzle-orm";
 
 export async function ragChat(opts: {
@@ -23,7 +22,7 @@ export async function ragChat(opts: {
     LIMIT 5
   `);
 
-  const contents = (chunks.rows as any[]).map((r) => r.content as string);
+  const contents = (chunks.rows as { content: string }[]).map((r) => r.content as string);
 
   // 3. System prompt + RAG + kullanıcı mesajı ile LLM çağrısı
   const ragContext = contents.length ? `\nBilgi tabanı:\n${contents.join("\n---\n")}\n` : "";

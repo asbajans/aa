@@ -22,7 +22,8 @@ export async function createPayment(req: PaymentRequest) {
   throw new Error("Bilinmeyen provider");
 }
 
-async function createIyzicoPayment(req: PaymentRequest) {
+async function createIyzicoPayment(_req: PaymentRequest) {
+  void _req;
   // Gerçek entegrasyon: iyzipay npm paketi ile
   // const iyzipay = new Iyzipay({ apiKey: process.env.IYZICO_API_KEY, secretKey: ... });
   // Şimdilik mock — env yoksa hata fırlatma, sandbox'ta test edilecek
@@ -31,13 +32,15 @@ async function createIyzicoPayment(req: PaymentRequest) {
   return { status: "pending" as const, providerPaymentId: `iyzico_${Date.now()}`, checkoutUrl: "https://sandbox-api.iyzipay.com/checkout" };
 }
 
-async function createPaytrPayment(req: PaymentRequest) {
+async function createPaytrPayment(_req: PaymentRequest) {
+  void _req;
   if (!process.env.PAYTR_MERCHANT_ID) return { status: "pending" as const, providerPaymentId: `paytr_mock_${Date.now()}`, checkoutUrl: "/odeme/paytr-mock" };
   // TODO: PayTR token oluşturma (hash = merchant_key + ...)
   return { status: "pending" as const, providerPaymentId: `paytr_${Date.now()}`, checkoutUrl: "https://www.paytr.com/odeme" };
 }
 
-async function createStripePayment(req: PaymentRequest) {
+async function createStripePayment(_req: PaymentRequest) {
+  void _req;
   if (!process.env.STRIPE_SECRET_KEY) return { status: "pending" as const, providerPaymentId: `stripe_mock_${Date.now()}`, checkoutUrl: "/odeme/stripe-mock" };
   // TODO: stripe.checkout.sessions.create
   return { status: "pending" as const, providerPaymentId: `stripe_${Date.now()}`, checkoutUrl: "https://checkout.stripe.com/pay/..." };

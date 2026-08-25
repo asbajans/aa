@@ -108,7 +108,8 @@ export async function synthesizeSpeech(opts: { text: string; voice?: string; mod
 }
 
 // STT — OpenRouter üzerinden Whisper (veya OpenAI direkt)
-export async function transcribeAudio(audioBuffer: Buffer, filename = "audio.webm"): Promise<string> {
+export async function transcribeAudio(audioBuffer: Buffer, _filename = "audio.webm"): Promise<string> {
+  void _filename;
   const apiKey = process.env.OPENROUTER_API_KEY;
   // OpenRouter STT endpoint yoksa OpenAI fallback kullanılabilir — şimdilik mock
   // Gerçek entegrasyonda: fetch(`${BASE}/audio/transcriptions`, { formData ... })

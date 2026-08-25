@@ -24,7 +24,8 @@ export async function POST(req: NextRequest) {
 
     const token = await at.toJwt();
     return NextResponse.json({ token, url: process.env.LIVEKIT_URL || "ws://localhost:7880" });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : String(e);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

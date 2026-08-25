@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { db } from "./index";
 import { categories, packages, payoutSettings } from "./schema";
 import { nanoid } from "nanoid";
@@ -17,7 +18,7 @@ async function seed() {
     { nameTr: "Biyoloji", slug: "biyoloji", level: "yks" as const, icon: "dna" },
   ];
   for (const c of cats) {
-    await db.insert(categories).values({ id: nanoid(), nameTr: c.nameTr, slug: c.slug, level: c.level, icon: c.icon } as any).onConflictDoNothing();
+    await db.insert(categories).values({ id: nanoid(), nameTr: c.nameTr, slug: c.slug, level: c.level, icon: c.icon } as unknown as any).onConflictDoNothing();
   }
 
   // Paketler
@@ -38,7 +39,7 @@ async function seed() {
         priceTry: p.price,
         isFeatured: p.featured,
         validDays: 365,
-      } as any)
+      } as unknown as any)
       .onConflictDoNothing();
   }
 
@@ -52,7 +53,7 @@ async function seed() {
       commissionLive: 20,
       commissionAi: 30,
       autoApproveDays: 7,
-    } as any)
+    } as unknown as any)
     .onConflictDoNothing();
 
   console.log("Seed done");

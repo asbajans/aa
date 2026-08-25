@@ -37,7 +37,8 @@ export async function POST(req: NextRequest) {
       audioBase64, // data:audio/mp3;base64, ile çalınır
       creditsUsed: 2, // örnek: 2 kredi
     });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : String(e);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

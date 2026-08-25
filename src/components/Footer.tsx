@@ -12,10 +12,10 @@ export function Footer() {
               akademi.biz.tr
             </div>
             <div className="mt-3 text-zinc-400 leading-relaxed">
-              LGS & YKS için AI destekli online akademi.<br />
-              Canlı ders (LiveKit, max 10) + öğretmeninin sesiyle ve tarzıyla 7/24 AI klon.
+              LGS & YKS için online akademi.<br />
+              Canlı ders + öğretmeninin sesiyle ve tarzıyla 7/24 Akademi Klonu.
             </div>
-            <div className="mt-3 text-xs text-zinc-500">KVKK uyumlu • Ses klonlama açık rıza ile • Iyzico / PayTR / Stripe • Cloudflare Tunnel • Portainer Stack</div>
+            <div className="mt-3 text-xs text-zinc-500">KVKK uyumlu • Güvenli ödeme • 7/24 destek</div>
           </div>
           <div>
             <div className="font-semibold text-white mb-3">Platform</div>
@@ -30,14 +30,14 @@ export function Footer() {
             <div className="space-y-2 text-zinc-400">
               <div><Link href="/ogrenci" className="hover:text-white">Öğrenci Paneli</Link></div>
               <div><Link href="/ogretmen" className="hover:text-white">Öğretmen Paneli</Link></div>
-              <div><Link href="/ogretmen/ai-klon" className="hover:text-white">AI Klon Stüdyosu</Link></div>
+              <div><Link href="/ogretmen/ai-klon" className="hover:text-white">Akademi Klonu Stüdyosu</Link></div>
               <div><Link href="/superadmin" className="hover:text-white">SüperAdmin</Link></div>
             </div>
           </div>
         </div>
         <div className="mt-8 border-t border-white/10 pt-6 flex flex-col md:flex-row justify-between gap-2 text-xs text-zinc-500">
           <div>© {new Date().getFullYear()} akademi.biz.tr — Tüm hakları saklıdır.</div>
-          <div>24c / 144GB • GPU yok • OpenRouter • 4000–4200 port aralığı</div>
+          <div>Güvenli • Hızlı • Destek her zaman</div>
         </div>
       </div>
     </footer>

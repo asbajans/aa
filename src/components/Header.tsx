@@ -12,7 +12,7 @@ export function Header() {
           </span>
           <span className="text-[17px] font-bold tracking-tight text-white">akademi<span className="font-normal text-white/60">.biz.tr</span></span>
           <span className="hidden md:inline-flex items-center gap-1 rounded-full border border-violet-500/30 bg-violet-500/10 px-2.5 py-1 text-[11px] font-medium text-violet-300">
-            <Sparkles size={11} /> AI KLON
+            <Sparkles size={11} /> AKADEMİ KLONU
           </span>
         </Link>
         <nav className="hidden lg:flex items-center gap-1 text-[13px] font-medium">
@@ -20,7 +20,7 @@ export function Header() {
           <Link href="/paketler" className="px-3 py-2 text-zinc-400 hover:text-white transition">Paketler</Link>
           <Link href="/kvkk" className="px-3 py-2 text-zinc-400 hover:text-white transition">KVKK</Link>
           <span className="ml-2 hidden xl:inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs text-zinc-400">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Canlı • max 10
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Canlı dersler aktif
           </span>
         </nav>
         <div className="flex items-center gap-2">

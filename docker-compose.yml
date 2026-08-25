@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: akademi-web
     ports:
-      - "3000:3000"
+      - "4000:3000" # HOST:4000 -> CONTAINER:3000 | Cloudflare Tunnel: akademi.biz.tr -> http://web:3000
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://${DB_USER:-akademi}:${DB_PASSWORD:-change_me}@db:5432/${DB_NAME:-akademi}
@@ -54,7 +54,7 @@ services:
       - ./drizzle/migrations:/docker-entrypoint-initdb.d
       - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/00-init.sql
     ports:
-      - "5432:5432"
+      - "4001:5432" # HOST:4001 -> CONTAINER:5432 (opsiyonel debug, tunnel gerekmez)
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-akademi} -d ${DB_NAME:-akademi}"]
       interval: 10s
@@ -68,7 +68,7 @@ services:
     image: redis:7-alpine
     container_name: akademi-redis
     ports:
-      - "6379:6379"
+      - "4002:6379" # HOST:4002 -> CONTAINER:6379 (opsiyonel debug, tunnel gerekmez)
     volumes:
       - redisdata:/data
     healthcheck:
@@ -85,10 +85,10 @@ services:
     container_name: akademi-livekit
     command: --config /etc/livekit.yaml
     ports:
-      - "7880:7880"
-      - "7881:7881"
-      - "7882:7882/tcp"
-      - "50000-50010:50000-50010/udp"
+      - "4003:7880" # HOST:4003 -> CONTAINER:7880 (LiveKit API/WS) | Tunnel: livekit.akademi.biz.tr -> http://livekit:7880
+      - "4004:7881" # HOST:4004 -> CONTAINER:7881 (RTC TCP)
+      - "4005:7882/tcp" # HOST:4005 -> CONTAINER:7882 (TURN TCP)
+      - "4006-4016:50000-50010/udp" # HOST:4006-4016 -> CONTAINER:50000-50010/udp (RTC UDP range, 11 port = max 10 katılımcı için yeterli)
     volumes:
       - ./livekit/livekit.yaml:/etc/livekit.yaml:ro
     environment:

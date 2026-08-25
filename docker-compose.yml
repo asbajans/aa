@@ -85,10 +85,10 @@ services:
     container_name: akademi-livekit
     command: --config /etc/livekit.yaml
     ports:
-      - "4003:7880" # HOST:4003 -> CONTAINER:7880 (LiveKit API/WS) | Tunnel: livekit.akademi.biz.tr -> http://livekit:7880
-      - "4004:7881" # HOST:4004 -> CONTAINER:7881 (RTC TCP)
-      - "4005:7882/tcp" # HOST:4005 -> CONTAINER:7882 (TURN TCP)
-      - "4006-4016:50000-50010/udp" # HOST:4006-4016 -> CONTAINER:50000-50010/udp (RTC UDP range, 11 port = max 10 katılımcı için yeterli)
+      - "4003:7880" # HOST:4003 -> CONTAINER:7880 (LiveKit API/WS) | Tunnel: livekit.akademi.biz.tr -> http://livekit:7880 (SADECE BU TUNNEL'DAN GEÇER)
+      - "4004:7881" # HOST:4004 -> CONTAINER:7881 (RTC TCP - doğrudan firewall'dan açılır, tunnel DEĞİL)
+      - "4005:7882/tcp" # HOST:4005 -> CONTAINER:7882 (TURN TCP - doğrudan firewall)
+      - "4006-4200:50000-50194/udp" # HOST:4006-4200 (195 port) -> CONTAINER:50000-50194/udp (RTC UDP range) | ~195 eşzamanlı katılımcı = ~19 sınıf x 10 kişi. Tunnel DEĞİL, firewall/NAT'tan UDP açılır.
     volumes:
       - ./livekit/livekit.yaml:/etc/livekit.yaml:ro
     environment:

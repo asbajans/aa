@@ -14,17 +14,21 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 > **Domain:** `akademi.biz.tr` | **Repo:** `https://github.com/asbajans/aa.git` | **Stack:** Portainer Stack (GitHub) + Cloudflare Tunnel → kendi sunucun (24c/144GB, GPU yok) | **Hedef:** LGS & YKS öncelikli, tüm öğrenciler | **Dil:** TR default, altyapı EN/ES hazır (next-intl)
 
-## 0) Port Haritası (Kural: dış portlar 4000–4050)
+## 0) Port Haritası (Kural: dış portlar 4000–4200)
 
 | Servis | Container Port | Host Port (dış) | Cloudflare Tunnel Hedefi | Not |
 |---|---|---|---|---|
-| **web (Next.js)** | `3000` | **`4000:3000`** | `akademi.biz.tr` → `http://web:3000` | Ana site + API (`/api/health` healthcheck) |
-| **db (pgvector/pg16)** | `5432` | **`4001:5432`** | — (tunnel yok, sadece debug/ssh) | `DATABASE_URL=postgresql://...@db:5432/akademi` (container içi). Host’tan `localhost:4001` ile erişim |
-| **redis** | `6379` | **`4002:6379`** | — | `REDIS_URL=redis://redis:6379` |
-| **livekit (SFU)** | `7880` (API/WS) | **`4003:7880`** | `livekit.akademi.biz.tr` → `http://livekit:7880` | `LIVEKIT_URL=wss://livekit.akademi.biz.tr` (client buraya bağlanır) |
-| **livekit RTC TCP** | `7881` | **`4004:7881`** | — (WebRTC TCP) | `livekit.yaml:3` `rtc.tcp_port` |
-| **livekit TURN TCP** | `7882` | **`4005:7882/tcp`** | — | `livekit.yaml:16` `turn.enabled` açılacaksa |
-| **livekit RTC UDP range** | `50000-50010` (11 port) | **`4006-4016:50000-50010/udp`** | — (WebRTC UDP) | Max 10 katılımcı için 11 port yeterli |
+| **web (Next.js)** | `3000` | **`4000:3000`** | `akademi.biz.tr` → `http://web:3000` | ✅ **TUNNEL ile** — tek HTTPS entry |
+| **db (pgvector/pg16)** | `5432` | **`4001:5432`** | — (**tunnel YOK**, sadece debug/ssh) | `DATABASE_URL=postgresql://...@db:5432/akademi`. Host’tan `localhost:4001` ile erişim, firewall’da gerekirse kapat |
+| **redis** | `6379` | **`4002:6379`** | — (**tunnel YOK**) | `REDIS_URL=redis://redis:6379` |
+| **livekit (SFU)** | `7880` (API/WS) | **`4003:7880`** | `livekit.akademi.biz.tr` → `http://livekit:7880` | ✅ **TUNNEL ile** — client `LIVEKIT_URL=wss://livekit.akademi.biz.tr` buraya bağlanır |
+| **livekit RTC TCP** | `7881` | **`4004:7881`** | — (**tunnel YOK**, doğrudan firewall) | `livekit.yaml:3` `rtc.tcp_port` — WebRTC TCP fallback |
+| **livekit TURN TCP** | `7882` | **`4005:7882/tcp`** | — (**tunnel YOK**) | `livekit.yaml:16` `turn.enabled` açılacaksa |
+| **livekit RTC UDP range** | `50000-50194` (195 port) | **`4006-4200:50000-50194/udp`** | — (**tunnel YOK**, doğrudan firewall UDP) | Oda başı max 10, **~195 eşzamanlı katılımcı = ~19 sınıf x 10 kişi** |
+
+**ÖNEMLİ — Tunnel vs Doğrudan Port:**
+- **Cloudflare Tunnel (HTTP/WS sadece):** Sadece `web:3000` ve `livekit:7880` tunnel’dan geçer. Yani `cloudflared` config’te **sadece 2 hostname** var — tek tek 195 UDP portu yönlendirmezsin!
+- **Doğrudan firewall/NAT (UDP/TCP):** `4004`, `4005`, `4006-4200` **tunnel’dan geçmez**, sunucunun firewall’ında (UFW/iptables) ve varsa router/NAT’ta UDP olarak açık olmalı. LiveKit `use_external_ip: true` ile dış IP’yi client’a bildirir. Tunnel UDP’yi proxy’leyemez.
 
 **Cloudflare Tunnel config örneği (`cloudflared`):**
 
@@ -35,16 +39,18 @@ ingress:
   - hostname: akademi.biz.tr
     service: http://web:3000        # docker network içinde web:3000, host’ta 4000
   - hostname: livekit.akademi.biz.tr
-    service: http://livekit:7880   # host’ta 4003
+    service: http://livekit:7880   # host’ta 4003, WSS buradan
   - service: http_status:404
 ```
+# Firewall’da açılması gerekenler (tunnel dışı):
+# ufw allow 4004/tcp && ufw allow 4005/tcp && ufw allow 4006:4200/udp
 
-> Tüm dış portlar 4000–4050 aralığında. Portainer’de Stack deploy ederken host’ta bu portların boş olduğu kontrol edilmeli (Zencook 3000, Barbers 3300 ile çakışmaz).
+> Tüm dış portlar 4000–4200 aralığında. Portainer’de Stack deploy ederken host’ta bu portların boş olduğu kontrol edilmeli (Zencook 3000, Barbers 3300 ile çakışmaz). `docker-compose.yml:1` tek kaynak.
 
 ## 1) Yapılanlar (Done) — commit `ea50767` + port güncellemesi
 
 - [x] **Proje iskeleti:** `create-next-app@16.3.2` (Next.js 16 + Tailwind 4 + TS) → `C:/Users/EXCALIBUR/Documents/Akademi`, `package.json:1`, `next.config.ts:1` (`output: standalone`, `next-intl` plugin), `middleware.ts:1` (locale routing)
-- [x] **Docker & Deploy:** `Dockerfile:1` (multi-stage, `standalone` → `server.js`), `docker-compose.yml:1` (web+db+redis+livekit, healthcheck, `akademi-network`, portlar 4000–4016), `livekit/livekit.yaml:1` (max_participants 10, rtc range), `.env.example:1`
+- [x] **Docker & Deploy:** `Dockerfile:1` (multi-stage, `standalone` → `server.js`), `docker-compose.yml:1` (web+db+redis+livekit, healthcheck, `akademi-network`, portlar 4000–4200), `livekit/livekit.yaml:1` (max_participants 10, rtc 50000-50194), `.env.example:1`
 - [x] **DB:** `src/lib/db/schema.ts:1` (pgvector 1536, `userRoleEnum`, `classes` kapasite 10, `packages/creditTransactions/userCredits/payments`, `wallets/ledgerEntries/payouts/payoutSettings`, `aiClones/aiKnowledgeChunks/aiInteractions`, `assignments/submissions/reviews/notifications`), `drizzle.config.ts:1`, `scripts/init-db.sql:1`, `src/lib/db/seed.ts:1` (LGS/YKS 8 branş + 4 paket + payout ayarları)
 - [x] **Auth & i18n:** `src/lib/auth.ts:1` (better-auth + drizzleAdapter, 7 gün session), `src/i18n/routing.ts:1`/`request.ts:1`/`navigation.ts:1`, `messages/tr.json:1` + `en/es` hazır, `middleware.ts:1` `localePrefix: as-needed` (tr prefix yok)
 - [x] **Web UI:** `src/app/page.tsx:1` (landing AI klon demosu), `src/app/(auth)/giris|kayit/page.tsx:1`, `src/app/(dashboard)/ogrenci|ogretmen|superadmin/page.tsx:1`, `src/app/(dashboard)/ogretmen/ai-klon/page.tsx:1` (4 adımlı Stüdyo), `src/app/kesfet|paketler|kvkk/page.tsx:1`, `src/app/(dashboard)/canli/page.tsx:1` + `src/components/livekit/LiveRoom.tsx:1` + `src/lib/livekit.ts:1` + `src/app/api/livekit/token/route.ts:1` (AccessToken, `roomAdmin` öğretmene), `src/components/Header.tsx:1`/`Footer.tsx:1`, `src/components/ui/*`
@@ -90,7 +96,7 @@ ingress:
 
 ## 3) Kurallar & Notlar (Agent için)
 
-- **Port kuralı:** Dış portlar 4000–4050 arası olmalı. Yeni servis eklenirse sıradaki boş portu kullan (4017+). `docker-compose.yml:1` tek kaynak.
+- **Port kuralı:** Dış portlar 4000–4200 arası olmalı. Yeni servis eklenirse sıradaki boş portu kullan (4201+ → kural genişletilmeli). `docker-compose.yml:1` tek kaynak.
 - **Dil:** Kod/yorum Türkçe, commit mesajı Türkçe kısa, docs Türkçe. i18n altyapısı hazır ama default `tr`.
 - **AI:** Sunucu GPU yok → asla local model önerme, hep OpenRouter (`OPENROUTER_API_KEY`). Fiyat tablosu `src/lib/ai/openrouter.ts:1` `MODEL_PRICING`.
 - **Canlı ders:** Max 10 kişi katı kural (`livekit.yaml:8` + `src/lib/livekit.ts:4` + `classes.capacity` default 10).

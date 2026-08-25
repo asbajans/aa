@@ -2,21 +2,24 @@ port: 7880
 rtc:
   tcp_port: 7881
   port_range_start: 50000
-  port_range_end: 50010
-  use_external_ip: false
+  port_range_end: 50194
+  use_external_ip: true
 
 keys:
   devkey: secret
 
 room:
-  max_participants: 10
+  max_participants: 10 # ODA BAŞINA 10 (platform geneli değil) — sınıf kapasitesi
   empty_timeout: 300
   departure_timeout: 20
 
 turn:
   enabled: false
+  # Prod'da NAT arkası için açılacaksa: domain: turn.akademi.biz.tr, tls_port: 5349
 
 logging:
   level: info
 
-# Egress (kayıt) için R2/S3 ayarları env ile override edilecek
+# Not: 50000-50194 = 195 UDP port = ~195 eşzamanlı katılımcı (~19 sınıf x 10)
+# Docker host mapping: 4006-4200:50000-50194/udp (4000-4200 kuralı içinde)
+# Bu UDP portları Cloudflare Tunnel'dan GEÇMEZ, doğrudan firewall/NAT'tan açılır.

@@ -27,6 +27,7 @@ services:
       PAYTR_MERCHANT_ID: ${PAYTR_MERCHANT_ID}
       PAYTR_MERCHANT_KEY: ${PAYTR_MERCHANT_KEY}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      BOOTSTRAP_KEY: ${BOOTSTRAP_KEY}
     depends_on:
       db:
         condition: service_healthy

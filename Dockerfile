@@ -11,6 +11,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
+# DB migration'larını build sırasında üret (deploy'da /api/admin/bootstrap uygular)
+RUN npm run db:generate
 
 FROM base AS runner
 WORKDIR /app
@@ -25,6 +27,10 @@ RUN mkdir -p .next/cache && chown nextjs:nodejs .next/cache
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Migration dosyaları (bootstrap endpoint'i uygular)
+COPY --from=builder --chown=nextjs:nodejs /app/drizzle/migrations ./drizzle/migrations
+# drizzle-orm full paket (migrator subpath standalone trace'e girmez)
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/drizzle-orm ./node_modules/drizzle-orm
 
 USER nextjs
 EXPOSE 3000

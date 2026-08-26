@@ -12,7 +12,7 @@ node_modules
 .env.local
 
 # db
-drizzle/*.sql
+# drizzle migration'ları commitlenir (deploy'da bootstrap uygular)
 
 # mobile
 mobile/node_modules

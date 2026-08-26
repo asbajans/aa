@@ -80,14 +80,17 @@ ingress:
 
 ## 2) Yapılacaklar (TODO) — öncelik sırasıyla
 
-### Faz 0 — Deploy doğrulama (1 gün)
-- [ ] `git push -u origin master` → Portainer Stack → `https://github.com/asbajans/aa.git` → `docker-compose.yml` ile deploy testi (healthcheck `/api/health`)
-- [ ] Cloudflare Tunnel oluştur (`cloudflared tunnel create akademi`), DNS `akademi.biz.tr` + `livekit.akademi.biz.tr` → yukarıdaki port haritası ile bağla, `TUNNEL_TOKEN` env gir
-- [ ] `.env` doldur (`BETTER_AUTH_SECRET` 32+ char, `OPENROUTER_API_KEY`, `LIVEKIT_API_KEY/SECRET`, S3/R2, ödeme anahtarları), `npm run db:push && npm run db:seed` (pgvector extensiyonu `scripts/init-db.sql:1`)
+### Faz 0 — Deploy doğrulama (1 gün) — ✅ tamam
+- [x] `git push -u origin master` → Portainer Stack → `https://github.com/asbajans/aa.git` → `docker-compose.yml` ile deploy (healthcheck `/api/health`)
+- [x] Cloudflare Tunnel: `akademi.biz.tr` + `livekit.akademi.biz.tr` (ingress sadece 2 hostname, UDP firewall'dan)
+- [x] **Deploy sonrası DB bootstrap:** Container'da `db:push` ÇALIŞMAZ (standalone image'de drizzle-kit yok). Bunun yerine:
+  1. Portainer env'e `BOOTSTRAP_KEY` ekle (rastgele uzun string), redeploy et
+  2. `curl -X POST https://akademi.biz.tr/api/admin/bootstrap -H "x-bootstrap-key: <BOOTSTRAP_KEY>"`
+  - Bu endpoint (`src/app/api/admin/bootstrap/route.ts:1`): pgvector extension + drizzle migration (`drizzle/migrations` image içine gömülü, `Dockerfile:18` builder'da `db:generate`) + demo hesaplar + kategori/paket/payout seed. Idempotent — `bootstrap_marker` tablosuyla kilitli, `?force=1` ile zorlanabilir.
 
 ### Faz 1 — MVP LMS (2–3 hafta) — **şu an buradayız**
-- [ ] **Auth bağla:** `better-auth` drizzle migration üret (`npm run db:generate`), `src/lib/auth.ts:1`’te `drizzleAdapter` tabloları (`users/sessions/accounts/verifications`) ile sync, `/giris` & `/kayit` formlarını `authClient.signUp/signIn` ile çalıştır, role → dashboard redirect, `layout.tsx` session guard
-- [ ] **DB migrate & seed prod:** `drizzle/migrations` Portainer volume’a mount’lı (`docker-compose.yml:54`), ilk deploy’da `init-db.sql` vector extension’ı açar
+- [x] **Auth bağla:** `src/app/api/auth/[...all]/route.ts:1` (toNextJsHandler) + `src/lib/auth-client.ts:1` (createAuthClient) + `/giris` & `/kayit` formları `signInEmail/signUpEmail` ile çalışıyor, role → dashboard redirect, `(dashboard)/layout.tsx:9` session guard + rol guard'ları + `SignOutButton`
+- [x] **SuperAdmin canlı veri:** `superadmin/page.tsx:1` gerçek kullanıcı tablosu + `actions.ts:1` server actions (rol değiştir / kredi ekle / ban)
 - [ ] **Sınıf CRUD:** Öğretmen `canli` + `ogretmen` panelinde sınıf oluştur (title, capacity max 10 validation `src/lib/livekit.ts:4`, priceCredits, syllabus), SuperAdmin onay, öğrenci `kesfet` → enroll (kredi düşme `creditTransactions`)
 - [ ] **Takvim & Rezervasyon:** `liveSessions` scheduledAt, çakışma kontrolü, hatırlatma (notif)
 - [ ] **Paket satın alma akışı:** `paketler` → `POST /api/payments/create` → Iyzico/PayTR/Stripe checkout → webhook `/api/payments/webhook/*` → `payments` success → `creditTransactions` credit + `userCredits` güncelle (şu an mock, gerçek webhook implementasyonu)

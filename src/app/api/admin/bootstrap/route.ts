@@ -82,17 +82,30 @@ export async function POST(req: Request) {
         if (/exist|taken/i.test(msg)) {
           // Zaten var: şifreyi demo değere sıfırla + rolü düzelt (demo hesaplar öngörülebilir olmalı)
           const hashed = await hashPassword(u.password);
-          const upd = await db.execute(sql`
-            UPDATE accounts SET password = ${hashed}, updated_at = now()
-            WHERE provider_id = 'credential'
-              AND user_id = (SELECT id FROM users WHERE email = ${u.email} LIMIT 1)
-          `);
           await db.execute(sql`
             UPDATE users SET role = ${u.role}, name = ${u.name}, email_verified = true, updated_at = now()
             WHERE email = ${u.email}
           `);
-          const rowCount = (upd as unknown as { rowCount?: number }).rowCount ?? 0;
-          seededUsers.push({ email: u.email, role: u.role, status: rowCount > 0 ? "password-reset" : "account-missing" });
+          const userRow = await db.execute(sql`SELECT id FROM users WHERE email = ${u.email} LIMIT 1`);
+          const userId = (userRow.rows as { id: string }[])[0]?.id;
+          if (!userId) {
+            seededUsers.push({ email: u.email, role: u.role, status: "user-row-missing" });
+            continue;
+          }
+          const accRow = await db.execute(sql`
+            SELECT id FROM accounts WHERE provider_id = 'credential' AND user_id = ${userId} LIMIT 1
+          `);
+          const accId = (accRow.rows as { id: string }[])[0]?.id;
+          if (accId) {
+            await db.execute(sql`UPDATE accounts SET password = ${hashed}, updated_at = now() WHERE id = ${accId}`);
+          } else {
+            // Kullanıcı var ama credential account yok — oluştur
+            await db.execute(sql`
+              INSERT INTO accounts (id, user_id, account_id, provider_id, password)
+              VALUES (${nanoid()}, ${userId}, ${userId}, 'credential', ${hashed})
+            `);
+          }
+          seededUsers.push({ email: u.email, role: u.role, status: accId ? "password-reset" : "account-created" });
         } else {
           seededUsers.push({ email: u.email, role: u.role, status: `error: ${msg.slice(0, 120)}` });
         }

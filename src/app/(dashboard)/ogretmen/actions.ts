@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { classes, liveSessions, teacherProfiles, enrollments } from "@/lib/db/schema";
+import { classes, liveSessions, teacherProfiles, enrollments, categories } from "@/lib/db/schema";
 import { nanoid } from "nanoid";
 import { auth } from "@/lib/auth";
 
@@ -24,10 +24,26 @@ export async function createClass(formData: FormData) {
   const level = String(formData.get("level") || "lgs") as "lgs" | "yks" | "other";
   const priceCredits = parseInt(String(formData.get("priceCredits") || "0"), 10);
   const capacity = Math.min(10, Math.max(1, parseInt(String(formData.get("capacity") || "10"), 10)));
+  // Ders periyodu
+  const scheduleType = String(formData.get("scheduleType") || "weekly") as "weekly" | "monthly" | "none";
+  const scheduleDays = formData.getAll("scheduleDays").map((d) => parseInt(String(d), 10)).filter((n) => !isNaN(n));
+  const scheduleMonthDays = String(formData.get("scheduleMonthDays") || "").split(",").map((x) => parseInt(x.trim(), 10)).filter((n) => !isNaN(n) && n >= 1 && n <= 31);
+  const scheduleTime = String(formData.get("scheduleTime") || "18:00");
+  const durationMinutes = Math.max(15, parseInt(String(formData.get("durationMinutes") || "60"), 10));
   if (!title || !categoryId || !priceCredits) throw new Error("Başlık, kategori ve fiyat zorunlu");
+  if (scheduleType === "weekly" && scheduleDays.length === 0) throw new Error("Haftalık periyot için en az bir gün seç");
+  if (scheduleType === "monthly" && scheduleMonthDays.length === 0) throw new Error("Aylık periyot için gün gir (örn: 5,15,25)");
+  // Branş kontrolü: atanmış branş varsa sadece o branşlarda açabilir
+  const prof = await db.select().from(teacherProfiles).where(eq(teacherProfiles.userId, user.id)).limit(1);
+  const assigned = (prof[0]?.branches as string[] | null) || [];
+  if (assigned.length > 0 && user.role !== "superadmin") {
+    const cat = await db.select().from(categories).where(eq(categories.id, categoryId)).limit(1);
+    if (!cat[0] || !assigned.includes(cat[0].nameTr)) throw new Error(`Bu branşta sınıf açma yetkin yok. Atanan branşlar: ${assigned.join(", ")}`);
+  }
   const slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${nanoid(6)}`;
+  const classId = nanoid();
   await db.insert(classes).values({
-    id: nanoid(),
+    id: classId,
     teacherId: user.id,
     categoryId,
     title,
@@ -37,9 +53,33 @@ export async function createClass(formData: FormData) {
     capacity,
     priceCredits,
     status: "published",
+    scheduleType,
+    scheduleDays: scheduleDays as any,
+    scheduleMonthDays: scheduleMonthDays as any,
+    scheduleTime,
+    durationMinutes,
   });
+  // Periyoda göre ilk 4 canlı dersi otomatik oluştur
+  const { generateNextDates } = await import("@/lib/schedule");
+  const dates = generateNextDates(scheduleType, scheduleDays, scheduleMonthDays, scheduleTime, 4);
+  const { liveSessions } = await import("@/lib/db/schema");
+  for (const d of dates) {
+    await db.insert(liveSessions).values({
+      id: nanoid(),
+      classId,
+      teacherId: user.id,
+      title: `${title} — ${d.toLocaleDateString("tr-TR")}`,
+      livekitRoom: `class-${classId}-${d.getTime()}`,
+      scheduledAt: d,
+      status: "scheduled",
+      maxParticipants: capacity,
+    });
+  }
   revalidatePath("/ogretmen");
+  revalidatePath("/ogretmen/siniflar");
+  revalidatePath("/ogretmen/canli");
   revalidatePath("/kesfet");
+  revalidatePath("/ogrenci/kesfet");
   revalidatePath("/superadmin/siniflar");
 }
 

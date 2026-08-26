@@ -2,6 +2,7 @@
 import { db } from "@/lib/db";
 import { classes, categories, users, teacherProfiles } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { scheduleLabel } from "@/lib/schedule";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,10 @@ export default async function KesfetPage() {
         level: classes.level,
         capacity: classes.capacity,
         status: classes.status,
+        scheduleType: classes.scheduleType,
+        scheduleDays: classes.scheduleDays,
+        scheduleMonthDays: classes.scheduleMonthDays,
+        scheduleTime: classes.scheduleTime,
         teacherName: users.name,
         teacherId: classes.teacherId,
         categoryName: categories.nameTr,
@@ -60,6 +65,7 @@ export default async function KesfetPage() {
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col gap-3">
                   <div className="text-sm text-zinc-600 line-clamp-2">{c.description || "Müfredat yakında"}</div>
+                  <div className="text-xs text-violet-700 font-medium">📅 {scheduleLabel(c)}</div>
                   <div className="flex items-center gap-2 text-xs"><Badge>{c.capacity} kişi</Badge><Badge>{c.priceCredits} kredi</Badge><Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">Akademi Klonu</Badge></div>
                   <form action={enrollToClass} className="mt-auto space-y-2">
                     <input type="hidden" name="classId" value={c.id} />

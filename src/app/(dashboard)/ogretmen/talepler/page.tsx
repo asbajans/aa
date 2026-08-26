@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import Link from "next/link";
 import { db } from "@/lib/db";
 import { oneOnOneRequests, users } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
@@ -67,6 +68,7 @@ export default async function OgretmenTaleplerPage() {
                       {r.status === "confirmed" && (
                         <>
                           <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">Onaylandı</Badge>
+                          <Link href={`/canli?room=1o1-${r.id}`}><Button size="sm">Derse Gir</Button></Link>
                           <form action={handleOneOnOne}><input type="hidden" name="id" value={r.id} /><input type="hidden" name="action" value="complete" /><Button size="sm" variant="outline" type="submit">Tamamlandı</Button></form>
                         </>
                       )}

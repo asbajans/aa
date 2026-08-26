@@ -197,6 +197,12 @@ export const classes = pgTable(
     coverImageUrl: text("cover_image_url"),
     syllabus: jsonb("syllabus").$type<{ week: number; topic: string }[]>(),
     status: classStatusEnum("status").default("draft").notNull(),
+    // Ders periyodu
+    scheduleType: varchar("schedule_type", { length: 10 }).default("weekly").notNull(), // weekly | monthly | none
+    scheduleDays: jsonb("schedule_days").$type<number[]>().default([]), // 0=Pzt .. 6=Paz
+    scheduleMonthDays: jsonb("schedule_month_days").$type<number[]>().default([]), // 1-31
+    scheduleTime: varchar("schedule_time", { length: 5 }).default("18:00").notNull(),
+    durationMinutes: integer("duration_minutes").default(60).notNull(),
     isAiCloneAllowed: boolean("is_ai_clone_allowed").default(true).notNull(),
     ratingAvg: numeric("rating_avg", { precision: 3, scale: 2 }).default("0"),
     ratingCount: integer("rating_count").default(0).notNull(),

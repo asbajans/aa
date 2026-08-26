@@ -125,7 +125,7 @@ export async function POST(req: Request) {
       if (!found) continue;
       if (found.role === "student") {
         await db.execute(sql`INSERT INTO student_profiles (id, user_id, level, grade) VALUES (${nanoid()}, ${found.id}, 'lgs', 8) ON CONFLICT (user_id) DO NOTHING`);
-        await db.execute(sql`INSERT INTO user_credits (user_id, balance) VALUES (${found.id}, 200) ON CONFLICT (user_id) DO NOTHING`);
+        await db.execute(sql`INSERT INTO user_credits (user_id, balance) VALUES (${found.id}, 500) ON CONFLICT (user_id) DO UPDATE SET balance = GREATEST(user_credits.balance, 500), updated_at = now()`);
       }
       if (found.role === "teacher") {
         await db.execute(sql`INSERT INTO teacher_profiles (id, user_id, branches, levels, is_verified, verified_at) VALUES (${nanoid()}, ${found.id}, '["Matematik"]'::jsonb, '["lgs","yks"]'::jsonb, true, now()) ON CONFLICT (user_id) DO NOTHING`);

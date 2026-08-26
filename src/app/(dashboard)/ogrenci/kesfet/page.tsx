@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { enrollToClass } from "@/app/kesfet/actions";
+import { scheduleLabel } from "@/lib/schedule";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +27,10 @@ export default async function OgrenciKesfetPage() {
       priceCredits: classes.priceCredits,
       level: classes.level,
       capacity: classes.capacity,
+      scheduleType: classes.scheduleType,
+      scheduleDays: classes.scheduleDays,
+      scheduleMonthDays: classes.scheduleMonthDays,
+      scheduleTime: classes.scheduleTime,
       teacherName: users.name,
       teacherId: classes.teacherId,
       categoryName: categories.nameTr,
@@ -66,6 +71,7 @@ export default async function OgrenciKesfetPage() {
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col gap-3">
                   <div className="text-sm text-zinc-600 line-clamp-2">{c.description || "Müfredat yakında"}</div>
+                  <div className="text-xs text-violet-700 font-medium">📅 {scheduleLabel(c)}</div>
                   <div className="flex items-center gap-2 text-xs flex-wrap">
                     <Badge>{c.capacity} kişi</Badge>
                     <Badge>{c.priceCredits} kredi</Badge>

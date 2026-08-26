@@ -6,10 +6,9 @@ import { db } from "@/lib/db";
 import { enrollments, classes, users } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Users } from "lucide-react";
-import { approveEnrollment } from "../actions";
+import { EnrollActions } from "./EnrollActions";
 
 export const dynamic = "force-dynamic";
 
@@ -50,10 +49,7 @@ export default async function OgretmenBasvurularPage() {
                     <div className="text-sm text-zinc-700">{e.classTitle} • {e.credits} kredi {e.message ? `• "${e.message}"` : ""}</div>
                     <div className="text-xs text-zinc-400">{new Date(e.enrolledAt).toLocaleString("tr-TR")}</div>
                   </div>
-                  <div className="flex gap-2">
-                    <form action={async () => { "use server"; await approveEnrollment(e.id, true); }}><Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">Onayla (kredi düş)</Button></form>
-                    <form action={async () => { "use server"; await approveEnrollment(e.id, false); }}><Button size="sm" variant="outline">Reddet</Button></form>
-                  </div>
+                  <EnrollActions enrollmentId={e.id} />
                 </div>
               ))}
             </div>

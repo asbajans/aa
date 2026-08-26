@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { createClass, updateClass, requestClassDeletion } from "../actions";
+import { scheduleLabel } from "@/lib/schedule";
 
 export const dynamic = "force-dynamic";
 
@@ -53,9 +54,36 @@ export default async function OgretmenSiniflarPage() {
                 <option value="yks">YKS</option>
                 <option value="other">Diğer</option>
               </select>
-              <input name="priceCredits" type="number" placeholder="Sınıf abonelik fiyatı (kredi)" required className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900" />
-              <input name="capacity" type="number" min={1} max={10} defaultValue={10} className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900" />
-              <Button type="submit" className="md:col-span-2">Sınıfı Oluştur</Button>
+            <input name="priceCredits" type="number" placeholder="Sınıf abonelik fiyatı (kredi)" required className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900" />
+            <input name="capacity" type="number" min={1} max={10} defaultValue={10} className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900" />
+            <div className="md:col-span-2 rounded-xl border border-zinc-200 bg-zinc-50 p-3 space-y-3">
+              <div className="text-xs font-semibold text-zinc-700">📅 Ders Periyodu (ilk 4 ders otomatik planlanır)</div>
+              <div className="grid md:grid-cols-3 gap-2">
+                <select name="scheduleType" defaultValue="weekly" className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900">
+                  <option value="weekly">Haftalık</option>
+                  <option value="monthly">Aylık</option>
+                  <option value="none">Esnek (plan yok)</option>
+                </select>
+                <input name="scheduleTime" type="time" defaultValue="18:00" className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900" />
+                <input name="durationMinutes" type="number" defaultValue={60} min={15} placeholder="Süre (dk)" className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900" />
+              </div>
+              <div>
+                <div className="text-xs text-zinc-500 mb-1">Haftalık günler (Haftalık seçilirse):</div>
+                <div className="flex flex-wrap gap-2">
+                  {["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"].map((d, i) => (
+                    <label key={d} className="flex items-center gap-1 text-sm border border-zinc-200 rounded-lg px-2 py-1 bg-white">
+                      <input type="checkbox" name="scheduleDays" value={i} defaultChecked={i === 0 || i === 3} />
+                      {d}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-zinc-500">Aylık günler (Aylık seçilirse, virgülle):</div>
+                <input name="scheduleMonthDays" placeholder="5,15,25" className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900" />
+              </div>
+            </div>
+            <Button type="submit" className="md:col-span-2">Sınıfı Oluştur</Button>
             </form>
           </CardContent>
         </Card>
@@ -67,6 +95,7 @@ export default async function OgretmenSiniflarPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex justify-between items-center">{c.title} {c.deletionRequested && <Badge className="bg-red-100 text-red-700 border-red-200">Silme talebi bekliyor</Badge>}</CardTitle>
               <CardDescription>{c.level} • {c.capacity} kişi • {c.priceCredits} kredi • {c.status}</CardDescription>
+              <div className="text-xs text-violet-600 font-medium">📅 {scheduleLabel(c)}</div>
             </CardHeader>
             <CardContent className="space-y-3">
               <details>

@@ -9,18 +9,20 @@ import { auth } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Video, Bot, Wallet, Plus, Calendar, Users, Clock } from "lucide-react";
-import { createClass, createLiveSession, updateTeacherPricing, approveEnrollment, handleOneOnOne } from "./actions";
+import { Video, Bot, Wallet, Plus, Calendar, Users } from "lucide-react";
+import { createClass, createLiveSession, approveEnrollment, handleOneOnOne } from "./actions";
 
 export default async function OgretmenPanel() {
   const session = await auth.api.getSession({ headers: await headers() }).catch(() => null);
   if (!session?.user) redirect("/giris");
   if (session.user.role !== "teacher" && session.user.role !== "superadmin") redirect("/ogrenci");
 
-  const cats = await db.select().from(categories).where(eq(categories.isActive, true)).limit(50).catch(() => []);
+  const profile = (await db.select().from(teacherProfiles).where(eq(teacherProfiles.userId, session.user.id)).limit(1).catch(() => []))[0];
+  const allCats = await db.select().from(categories).where(eq(categories.isActive, true)).limit(50).catch(() => []);
+  const assignedBranches = (profile?.branches as string[] | null) || [];
+  const cats = assignedBranches.length === 0 ? allCats : allCats.filter((c) => assignedBranches.includes(c.nameTr));
   const myClasses = await db.select().from(classes).where(eq(classes.teacherId, session.user.id)).orderBy(classes.createdAt).limit(20).catch(() => []);
   const mySessions = await db.select().from(liveSessions).where(eq(liveSessions.teacherId, session.user.id)).orderBy(liveSessions.scheduledAt).limit(10).catch(() => []);
-  const profile = (await db.select().from(teacherProfiles).where(eq(teacherProfiles.userId, session.user.id)).limit(1).catch(() => []))[0];
   const pendingEnrolls = await db
     .select({ id: enrollments.id, status: enrollments.status, message: enrollments.requestMessage, classTitle: classes.title, studentName: users.name, studentEmail: users.email })
     .from(enrollments)
@@ -122,19 +124,12 @@ export default async function OgretmenPanel() {
         </CardContent>
       </Card>
 
-      {/* Fiyat & Program */}
+      {/* Fiyat & Program - ayrı sayfaya taşındı */}
       <Card>
-        <CardHeader><CardTitle className="flex gap-2 items-center"><Clock size={18} /> Fiyat & Program Ayarları</CardTitle><CardDescription>1-1 ders, öğretmen aboneliği (klon erişimi) ve sınıf fiyatları — hepsini sen belirlersin, superadmin görür ve düzenleyebilir.</CardDescription></CardHeader>
-        <CardContent className="space-y-4">
-          <form action={updateTeacherPricing} className="grid md:grid-cols-2 gap-3">
-            <div><label className="text-xs text-zinc-500">1-1 Ders (kredi/saat)</label><input name="oneOnOnePriceCredits" type="number" defaultValue={profile?.oneOnOnePriceCredits || profile?.hourlyPriceCredits || 80} className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900" /></div>
-            <div><label className="text-xs text-zinc-500">Öğretmene Abonelik (kredi/ay)</label><input name="teacherSubscriptionPriceCredits" type="number" defaultValue={profile?.teacherSubscriptionPriceCredits || 199} className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900" /></div>
-            <div><label className="text-xs text-zinc-500">Klon aylık limit</label><input name="cloneAccessLimit" type="number" defaultValue={profile?.cloneAccessLimit || 50} className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900" /></div>
-            <div><label className="text-xs text-zinc-500">Saatlik (eski, 1-1 ile aynı)</label><input name="hourlyPriceCredits" type="number" defaultValue={profile?.hourlyPriceCredits || 60} className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900" /></div>
-            <div className="md:col-span-2"><label className="text-xs text-zinc-500">Kısa biyografi</label><input name="bioDetail" defaultValue={profile?.bioDetail || ""} placeholder="Örn: LGS'de 10 yıllık deneyim, soru odaklı" className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900" /></div>
-            <Button type="submit" className="md:col-span-2">Fiyatları Kaydet</Button>
-          </form>
-          <div className="text-xs text-zinc-500">Sınıf fiyatı her sınıf oluştururken ayrı belirlenir (aboneliğe dahil olan toplu canlı dersler o sınıfın ücretine dahildir). 1-1 dersler ayrı ücrete tabidir.</div>
+        <CardHeader><CardTitle className="flex gap-2 items-center"><Wallet size={18} /> Fiyatlarım</CardTitle><CardDescription>Ayrı sayfada: 1-1, abonelik ve klon ücretlerini abonelere özel indirimle ayarla.</CardDescription></CardHeader>
+        <CardContent>
+          <Link href="/ogretmen/fiyatlar"><Button className="w-full">Fiyat Ayarlarına Git</Button></Link>
+          <div className="mt-2 text-sm text-zinc-600">1-1: <b>{profile?.oneOnOnePriceCredits || 80} kredi</b> (abonelere { (profile as any)?.subscriberOneOnOnePriceCredits || 60}) • Abonelik: <b>{profile?.teacherSubscriptionPriceCredits || 199} kredi/ay</b></div>
         </CardContent>
       </Card>
 

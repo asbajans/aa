@@ -1,0 +1,2 @@
+ALTER TABLE "teacher_profiles" ADD COLUMN "subscriber_one_on_one_price_credits" integer DEFAULT 60 NOT NULL;--> statement-breakpoint
+ALTER TABLE "teacher_profiles" ADD COLUMN "subscriber_clone_price_credits" integer DEFAULT 1 NOT NULL;

@@ -125,6 +125,8 @@ export const teacherProfiles = pgTable("teacher_profiles", {
   enrollmentFeeCredits: integer("enrollment_fee_credits").default(0).notNull(), // eski alan, artık kullanılmıyor
   teacherSubscriptionPriceCredits: integer("teacher_subscription_price_credits").default(199).notNull(), // öğretmene abonelik / ay - klon sınırlı erişim
   oneOnOnePriceCredits: integer("one_on_one_price_credits").default(80).notNull(), // 1-1 ders ücreti (öğretmen belirler)
+  subscriberOneOnOnePriceCredits: integer("subscriber_one_on_one_price_credits").default(60).notNull(), // abonelere özel 1-1 fiyatı
+  subscriberClonePriceCredits: integer("subscriber_clone_price_credits").default(1).notNull(), // abonelere klon dk fiyatı (normal 2)
   cloneAccessLimit: integer("clone_access_limit").default(50).notNull(), // abonelikte aylık klon sorgu limiti
   // SaaS: Haftalık program (öğretmen müsaitlik)
   weeklySchedule: jsonb("weekly_schedule").$type<{ day: number; start: string; end: string; }[]>().default([]),

@@ -2,10 +2,17 @@
 import { db } from "./index";
 import { categories, packages, payoutSettings, users, accounts, teacherProfiles, studentProfiles, userCredits, wallets } from "./schema";
 import { nanoid } from "nanoid";
-import bcrypt from "bcryptjs";
+import { randomBytes, scrypt } from "node:crypto";
 
-async function hashPassword(pw: string) {
-  return bcrypt.hash(pw, 10);
+// better-auth ile aynı format: "salt:key" (scrypt, hex)
+function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(16).toString("hex");
+  return new Promise((resolve, reject) => {
+    scrypt(password.normalize("NFKC"), salt, 64, { N: 16384, r: 16, p: 1, maxmem: 128 * 16384 * 16 * 2 }, (err, key) => {
+      if (err) reject(err);
+      else resolve(`${salt}:${key.toString("hex")}`);
+    });
+  });
 }
 
 async function upsertUser(opts: { email: string; name: string; role: "student" | "teacher" | "superadmin"; password: string }) {
@@ -22,19 +29,17 @@ async function upsertUser(opts: { email: string; name: string; role: "student" |
       kvkkConsentVersion: "v1.0",
     } as any);
   } catch (e: any) {
-    // if already exists, fetch id
     if (e?.code === "23505") {
       const rows: any = await (db as any).execute(`SELECT id FROM users WHERE email = '${opts.email}' LIMIT 1`);
       const foundId = rows?.rows?.[0]?.id || rows?.[0]?.id;
       if (!foundId) throw e;
-      // ensure account exists
-      const accId = nanoid();
       try {
         await db.insert(accounts).values({
-          id: accId,
+          id: nanoid(),
           userId: foundId,
-          accountId: opts.email,
+          accountId: foundId,
           providerId: "credential",
+          issuer: "local:credential",
           password: hashed,
         } as any);
       } catch {}
@@ -42,16 +47,16 @@ async function upsertUser(opts: { email: string; name: string; role: "student" |
     }
     throw e;
   }
-  // create account
+  // better-auth sign-in lookup: providerId='credential' AND issuer='local:credential' AND accountId=userId
   await db.insert(accounts).values({
     id: nanoid(),
     userId: id,
-    accountId: opts.email,
+    accountId: id,
     providerId: "credential",
+    issuer: "local:credential",
     password: hashed,
   } as any);
 
-  // credits/wallet init
   try {
     await db.insert(userCredits).values({ userId: id, balance: opts.role === "student" ? 200 : 0 } as any);
   } catch {}
@@ -59,7 +64,6 @@ async function upsertUser(opts: { email: string; name: string; role: "student" |
     await db.insert(wallets).values({ userId: id } as any);
   } catch {}
 
-  // profiles
   if (opts.role === "teacher") {
     try {
       await db.insert(teacherProfiles).values({
@@ -106,7 +110,7 @@ async function seed() {
     { nameTr: "Başlangıç", credits: 100, bonus: 0, price: "499.00", featured: false },
     { nameTr: "Popüler", credits: 300, bonus: 50, price: "1299.00", featured: true },
     { nameTr: "Yoğun", credits: 600, bonus: 150, price: "2299.00", featured: false },
-    { nameTr: "Sınırsız Aylık", credits: 2000, bonus: 500, price: "3999.00", featured: false },
+    { nameTr: "Aylık", credits: 2000, bonus: 500, price: "3999.00", featured: false },
   ];
   for (const p of pkgs) {
     await db
@@ -135,12 +139,10 @@ async function seed() {
     } as unknown as any)
     .onConflictDoNothing();
 
-  // Demo hesaplar
   console.log("Demo hesaplar oluşturuluyor...");
   await upsertUser({ email: "admin@akademi.biz.tr", name: "Süper Admin", role: "superadmin", password: "Admin123!" });
   await upsertUser({ email: "ogretmen@akademi.biz.tr", name: "Ayşe Hoca", role: "teacher", password: "Ogretmen123!" });
   await upsertUser({ email: "ogrenci@akademi.biz.tr", name: "Deneme Öğrenci", role: "student", password: "Ogrenci123!" });
-  // Ekstra
   await upsertUser({ email: "demo.teacher2@akademi.biz.tr", name: "Mehmet Hoca", role: "teacher", password: "Demo123!" });
   await upsertUser({ email: "demo.student2@akademi.biz.tr", name: "Zeynep Öğrenci", role: "student", password: "Demo123!" });
 

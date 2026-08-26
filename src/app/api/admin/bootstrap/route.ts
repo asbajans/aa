@@ -92,8 +92,13 @@ export async function POST(req: Request) {
             seededUsers.push({ email: u.email, role: u.role, status: "user-row-missing" });
             continue;
           }
+          // issuer backfill — eski kayıtlarda NULL olabilir, sign-in lookup issuer şart
+          await db.execute(sql`
+            UPDATE accounts SET issuer = 'local:credential'
+            WHERE provider_id = 'credential' AND user_id = ${userId} AND (issuer IS NULL OR issuer = '')
+          `);
           const accRow = await db.execute(sql`
-            SELECT id FROM accounts WHERE provider_id = 'credential' AND user_id = ${userId} LIMIT 1
+            SELECT id FROM accounts WHERE provider_id = 'credential' AND issuer = 'local:credential' AND user_id = ${userId} LIMIT 1
           `);
           const accId = (accRow.rows as { id: string }[])[0]?.id;
           if (accId) {
@@ -101,8 +106,8 @@ export async function POST(req: Request) {
           } else {
             // Kullanıcı var ama credential account yok — oluştur
             await db.execute(sql`
-              INSERT INTO accounts (id, user_id, account_id, provider_id, password)
-              VALUES (${nanoid()}, ${userId}, ${userId}, 'credential', ${hashed})
+              INSERT INTO accounts (id, user_id, account_id, provider_id, issuer, password)
+              VALUES (${nanoid()}, ${userId}, ${userId}, 'credential', 'local:credential', ${hashed})
             `);
           }
           seededUsers.push({ email: u.email, role: u.role, status: accId ? "password-reset" : "account-created" });

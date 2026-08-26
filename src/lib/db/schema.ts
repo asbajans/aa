@@ -37,6 +37,8 @@ export const payoutPeriodEnum = pgEnum("payout_period", ["weekly", "biweekly", "
 export const aiCloneStatusEnum = pgEnum("ai_clone_status", ["draft", "pending_review", "approved", "rejected", "disabled"]);
 export const paymentProviderEnum = pgEnum("payment_provider", ["manual", "iyzico", "paytr", "stripe"]);
 export const paymentStatusEnum = pgEnum("payment_status", ["pending", "success", "failed", "cancelled"]);
+export const oneOnOneStatusEnum = pgEnum("one_on_one_status", ["pending", "proposed", "confirmed", "completed", "cancelled", "rejected"]);
+export const teacherSubscriptionStatusEnum = pgEnum("teacher_subscription_status", ["active", "cancelled", "expired"]);
 
 // ============ USERS (better-auth uyumlu) ============
 export const users = pgTable(
@@ -119,8 +121,11 @@ export const teacherProfiles = pgTable("teacher_profiles", {
   isVerified: boolean("is_verified").default(false).notNull(),
   verifiedAt: timestamp("verified_at"),
   // SaaS: Fiyatlandırma (öğretmen kendi belirler)
-  hourlyPriceCredits: integer("hourly_price_credits").default(60).notNull(), // 1 saat canlı ders = 60 kredi
-  enrollmentFeeCredits: integer("enrollment_fee_credits").default(0).notNull(), // öğrencinin öğretmene kaydolma ücreti (0 = ücretsiz başvuru)
+  hourlyPriceCredits: integer("hourly_price_credits").default(60).notNull(), // 1-1 ders 1 saat = 60 kredi (öğretmen belirler)
+  enrollmentFeeCredits: integer("enrollment_fee_credits").default(0).notNull(), // eski alan, artık kullanılmıyor
+  teacherSubscriptionPriceCredits: integer("teacher_subscription_price_credits").default(199).notNull(), // öğretmene abonelik / ay - klon sınırlı erişim
+  oneOnOnePriceCredits: integer("one_on_one_price_credits").default(80).notNull(), // 1-1 ders ücreti (öğretmen belirler)
+  cloneAccessLimit: integer("clone_access_limit").default(50).notNull(), // abonelikte aylık klon sorgu limiti
   // SaaS: Haftalık program (öğretmen müsaitlik)
   weeklySchedule: jsonb("weekly_schedule").$type<{ day: number; start: string; end: string; }[]>().default([]),
   bioDetail: text("bio_detail"),
@@ -193,6 +198,10 @@ export const classes = pgTable(
     isAiCloneAllowed: boolean("is_ai_clone_allowed").default(true).notNull(),
     ratingAvg: numeric("rating_avg", { precision: 3, scale: 2 }).default("0"),
     ratingCount: integer("rating_count").default(0).notNull(),
+    // Silme talebi (admin onayı)
+    deletionRequested: boolean("deletion_requested").default(false).notNull(),
+    deletionRequestedAt: timestamp("deletion_requested_at"),
+    deletionReason: text("deletion_reason"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
@@ -241,6 +250,8 @@ export const liveSessions = pgTable(
     recordingDuration: integer("recording_duration"), // saniye
     maxParticipants: integer("max_participants").default(10).notNull(),
     whiteboardData: jsonb("whiteboard_data"),
+    deletionRequested: boolean("deletion_requested").default(false).notNull(),
+    deletionRequestedAt: timestamp("deletion_requested_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (t) => [index("idx_live_class").on(t.classId), index("idx_live_scheduled").on(t.scheduledAt)]
@@ -517,6 +528,50 @@ export const notifications = pgTable("notifications", {
   isRead: boolean("is_read").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// ============ TEACHER SUBSCRIPTIONS (öğretmene abonelik - klon erişimi) ============
+export const teacherSubscriptions = pgTable(
+  "teacher_subscriptions",
+  {
+    id: text("id").primaryKey(),
+    teacherId: text("teacher_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    studentId: text("student_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    status: teacherSubscriptionStatusEnum("status").default("active").notNull(),
+    pricePaid: integer("price_paid").notNull(),
+    cloneAccessUsed: integer("clone_access_used").default(0).notNull(),
+    cloneAccessLimit: integer("clone_access_limit").notNull(),
+    startedAt: timestamp("started_at").defaultNow().notNull(),
+    expiresAt: timestamp("expires_at"), // null = süresiz
+  },
+  (t) => [unique("uniq_teacher_sub").on(t.teacherId, t.studentId), index("idx_teacher_sub_teacher").on(t.teacherId), index("idx_teacher_sub_student").on(t.studentId)]
+);
+
+// ============ 1-1 DERS TALEPLERİ ============
+export const oneOnOneRequests = pgTable(
+  "one_on_one_requests",
+  {
+    id: text("id").primaryKey(),
+    teacherId: text("teacher_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    studentId: text("student_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    status: oneOnOneStatusEnum("status").default("pending").notNull(),
+    message: text("message"),
+    proposedTime: timestamp("proposed_time"),
+    durationMinutes: integer("duration_minutes").default(60).notNull(),
+    priceCredits: integer("price_credits").notNull(),
+    studentConfirmed: boolean("student_confirmed").default(false).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [index("idx_1o1_teacher").on(t.teacherId), index("idx_1o1_student").on(t.studentId), index("idx_1o1_status").on(t.status)]
+);
 
 // ============ RELATIONS ============
 export const usersRelations = relations(users, ({ one, many }) => ({

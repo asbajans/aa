@@ -72,22 +72,26 @@ export async function createLiveSession(formData: FormData) {
 export async function updateTeacherPricing(formData: FormData) {
   const user = await requireTeacher();
   const hourly = parseInt(String(formData.get("hourlyPriceCredits") || "60"), 10);
-  const enrollmentFee = parseInt(String(formData.get("enrollmentFeeCredits") || "0"), 10);
+  const oneOnOne = parseInt(String(formData.get("oneOnOnePriceCredits") || String(hourly)), 10);
+  const teacherSub = parseInt(String(formData.get("teacherSubscriptionPriceCredits") || "199"), 10);
+  const cloneLimit = parseInt(String(formData.get("cloneAccessLimit") || "50"), 10);
   const bioDetail = String(formData.get("bioDetail") || "");
-  // ensure profile exists
   const existing = await db.select().from(teacherProfiles).where(eq(teacherProfiles.userId, user.id)).limit(1);
   if (!existing[0]) {
     await db.insert(teacherProfiles).values({
       id: nanoid(),
       userId: user.id,
       hourlyPriceCredits: hourly,
-      enrollmentFeeCredits: enrollmentFee,
+      oneOnOnePriceCredits: oneOnOne,
+      teacherSubscriptionPriceCredits: teacherSub,
+      cloneAccessLimit: cloneLimit,
       bioDetail,
     });
   } else {
-    await db.update(teacherProfiles).set({ hourlyPriceCredits: hourly, enrollmentFeeCredits: enrollmentFee, bioDetail, updatedAt: new Date() }).where(eq(teacherProfiles.userId, user.id));
+    await db.update(teacherProfiles).set({ hourlyPriceCredits: hourly, oneOnOnePriceCredits: oneOnOne, teacherSubscriptionPriceCredits: teacherSub, cloneAccessLimit: cloneLimit, bioDetail, updatedAt: new Date() }).where(eq(teacherProfiles.userId, user.id));
   }
   revalidatePath("/ogretmen");
+  revalidatePath(`/ogretmenler/${user.id}`);
 }
 
 export async function updateWeeklySchedule(formData: FormData) {
@@ -153,4 +157,59 @@ export async function approveEnrollment(enrollmentId: string, approve: boolean) 
   revalidatePath("/ogretmen");
   revalidatePath("/ogrenci");
   revalidatePath("/superadmin");
+}
+
+export async function updateClass(formData: FormData) {
+  const user = await requireTeacher();
+  const id = String(formData.get("id") || "");
+  const title = String(formData.get("title") || "").trim();
+  const description = String(formData.get("description") || "").trim();
+  const priceCredits = parseInt(String(formData.get("priceCredits") || "0"), 10);
+  if (!id || !title) throw new Error("Eksik bilgi");
+  const cls = await db.select().from(classes).where(eq(classes.id, id)).limit(1);
+  if (!cls[0] || cls[0].teacherId !== user.id) throw new Error("Yetki yok");
+  await db.update(classes).set({ title, description, priceCredits: priceCredits || cls[0].priceCredits, updatedAt: new Date() }).where(eq(classes.id, id));
+  revalidatePath("/ogretmen");
+  revalidatePath("/kesfet");
+}
+
+export async function requestClassDeletion(formData: FormData) {
+  const user = await requireTeacher();
+  const id = String(formData.get("id") || "");
+  const reason = String(formData.get("reason") || "");
+  const cls = await db.select().from(classes).where(eq(classes.id, id)).limit(1);
+  if (!cls[0] || cls[0].teacherId !== user.id) throw new Error("Yetki yok");
+  await db.update(classes).set({ deletionRequested: true, deletionRequestedAt: new Date(), deletionReason: reason, updatedAt: new Date() }).where(eq(classes.id, id));
+  revalidatePath("/ogretmen");
+  revalidatePath("/superadmin/siniflar");
+}
+
+export async function requestLiveSessionDeletion(formData: FormData) {
+  const user = await requireTeacher();
+  const id = String(formData.get("id") || "");
+  const s = await db.select().from(liveSessions).where(eq(liveSessions.id, id)).limit(1);
+  if (!s[0] || s[0].teacherId !== user.id) throw new Error("Yetki yok");
+  await db.update(liveSessions).set({ deletionRequested: true, deletionRequestedAt: new Date() }).where(eq(liveSessions.id, id));
+  revalidatePath("/ogretmen");
+}
+
+// 1-1 talebi için öğretmen tarafı: tarih öner / reddet
+export async function handleOneOnOne(formData: FormData) {
+  const user = await requireTeacher();
+  const id = String(formData.get("id") || "");
+  const action = String(formData.get("action") || ""); // propose / reject / complete
+  const proposedTimeRaw = String(formData.get("proposedTime") || "");
+  const { oneOnOneRequests } = await import("@/lib/db/schema");
+  const reqRow = await db.select().from(oneOnOneRequests).where(eq(oneOnOneRequests.id, id)).limit(1);
+  if (!reqRow[0] || reqRow[0].teacherId !== user.id) throw new Error("Yetki yok");
+  if (action === "reject") {
+    await db.update(oneOnOneRequests).set({ status: "rejected", updatedAt: new Date() }).where(eq(oneOnOneRequests.id, id));
+  } else if (action === "propose") {
+    if (!proposedTimeRaw) throw new Error("Tarih seç");
+    const pt = new Date(proposedTimeRaw);
+    await db.update(oneOnOneRequests).set({ status: "proposed", proposedTime: pt, updatedAt: new Date() }).where(eq(oneOnOneRequests.id, id));
+  } else if (action === "complete") {
+    await db.update(oneOnOneRequests).set({ status: "completed", updatedAt: new Date() }).where(eq(oneOnOneRequests.id, id));
+  }
+  revalidatePath("/ogretmen");
 }

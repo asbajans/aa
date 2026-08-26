@@ -29,13 +29,37 @@ export default async function OgretmenPublicPage({ params }: { params: Promise<{
           <CardContent className="space-y-3">
             <div className="text-sm text-zinc-700 whitespace-pre-wrap">{profile?.bioDetail || "Öğretmen henüz biyografi eklemedi."}</div>
             <div className="flex flex-wrap gap-2 text-sm">
-              <Badge>{profile?.hourlyPriceCredits || 60} kredi / saat</Badge>
-              {profile?.enrollmentFeeCredits ? <Badge>{profile.enrollmentFeeCredits} kredi kayıt ücreti</Badge> : <Badge className="bg-zinc-100 text-zinc-700 border-zinc-200">Ücretsiz başvuru</Badge>}
+              <Badge>{profile?.oneOnOnePriceCredits || profile?.hourlyPriceCredits || 80} kredi / 1-1 saat</Badge>
+              <Badge>{profile?.teacherSubscriptionPriceCredits || 199} kredi / ay abonelik</Badge>
+              <Badge className="bg-violet-50 text-violet-700 border-violet-200">Klon: {profile?.cloneAccessLimit || 50}/ay</Badge>
               {profile?.isVerified && <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">Onaylı</Badge>}
             </div>
             <div className="text-xs text-zinc-500">E-posta: {teacher.email}</div>
           </CardContent>
         </Card>
+
+        <div className="grid md:grid-cols-2 gap-4 mt-4">
+          <Card className="bg-white text-zinc-900">
+            <CardHeader><CardTitle className="text-base">Öğretmene Abone Ol</CardTitle><CardDescription>{profile?.teacherSubscriptionPriceCredits || 199} kredi / ay • Klon {profile?.cloneAccessLimit || 50} sorgu/ay dahil</CardDescription></CardHeader>
+            <CardContent>
+              <form action={async (fd: FormData) => { "use server"; const { subscribeToTeacher } = await import("./actions"); await subscribeToTeacher(fd); }}>
+                <input type="hidden" name="teacherId" value={id} />
+                <Button type="submit" className="w-full">Abone Ol — {profile?.teacherSubscriptionPriceCredits || 199} kredi</Button>
+              </form>
+              <div className="text-xs text-zinc-500 mt-2">Abonelik: öğretmenin Akademi Klonundan sınırlı sayıda faydalanma hakkı verir.</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white text-zinc-900">
+            <CardHeader><CardTitle className="text-base">1-1 Ders Talebi</CardTitle><CardDescription>{profile?.oneOnOnePriceCredits || 80} kredi / 60dk • Öğretmen tarih önerir, sen onaylayınca kredi düşer</CardDescription></CardHeader>
+            <CardContent>
+              <form action={async (fd: FormData) => { "use server"; const { requestOneOnOne } = await import("./actions"); await requestOneOnOne(fd); }} className="space-y-2">
+                <input type="hidden" name="teacherId" value={id} />
+                <textarea name="message" placeholder="Hangi konuda 1-1 istersin? (örn: Türev soru çözümü)" rows={2} className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900" />
+                <Button type="submit" className="w-full">1-1 Talep Gönder</Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
 
         <div className="mt-6">
           <h2 className="text-lg font-bold text-white">Sınıfları ({myClasses.length})</h2>

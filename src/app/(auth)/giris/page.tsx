@@ -75,14 +75,7 @@ export default function GirisPage() {
             <span className="mx-2 text-zinc-300">•</span>
             <Link href="/kesfet" className="font-medium text-zinc-700 hover:text-zinc-900">Sınıfları keşfet</Link>
           </div>
-          <details className="rounded-xl bg-zinc-50 border border-zinc-200 p-3">
-            <summary className="text-xs font-semibold text-zinc-700 cursor-pointer">Deneme hesapları</summary>
-            <div className="mt-2 space-y-1 text-xs text-zinc-600">
-              <div><b>Admin:</b> admin@akademi.biz.tr / Admin123!</div>
-              <div><b>Öğretmen:</b> ogretmen@akademi.biz.tr / Ogretmen123!</div>
-              <div><b>Öğrenci:</b> ogrenci@akademi.biz.tr / Ogrenci123!</div>
-            </div>
-          </details>
+
         </CardContent>
       </Card>
     </div>

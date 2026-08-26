@@ -118,18 +118,22 @@ export default async function SuperAdminPanel() {
         </CardContent>
       </Card>
 
-      <div className="grid md:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-4 gap-4">
         <Card>
-          <CardHeader><CardTitle>Paket & Kredi</CardTitle><CardDescription>{stats.packages} aktif paket — satın alma akışı webhook fazında</CardDescription></CardHeader>
-          <CardContent><Link href="/paketler"><Button variant="outline" className="w-full">Paketleri Gör</Button></Link></CardContent>
+          <CardHeader><CardTitle>Paketler</CardTitle><CardDescription>{stats.packages} paket • SaaS fiyatlandırma</CardDescription></CardHeader>
+          <CardContent className="space-y-2"><Link href="/superadmin/paketler"><Button className="w-full">Yönet</Button></Link><Link href="/paketler" className="text-xs underline text-zinc-500">Öğrenci görünümü</Link></CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Sınıflar</CardTitle><CardDescription>{stats.classes} sınıf • tüm öğretmenler</CardDescription></CardHeader>
+          <CardContent><Link href="/superadmin/siniflar"><Button variant="outline" className="w-full">Tüm Sınıflar</Button></Link></CardContent>
         </Card>
         <Card className="border-amber-200 bg-amber-50/50">
-          <CardHeader><CardTitle>Akademi Klonu Onayları</CardTitle><CardDescription>Ses izni + içerik denetimi</CardDescription></CardHeader>
-          <CardContent><Badge>Onay bekleyen: {stats.pendingClones}</Badge></CardContent>
+          <CardHeader><CardTitle>Akademi Klonları</CardTitle><CardDescription>{stats.clones} klon • onayla/reddet</CardDescription></CardHeader>
+          <CardContent className="space-y-2"><Link href="/superadmin/klonlar"><Button variant="outline" className="w-full">Klonları Gör</Button></Link><Badge>Onay bekleyen: {stats.pendingClones}</Badge></CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle>Güvenlik & KVKK</CardTitle><CardDescription>Ban geçmişi, rıza arşivi</CardDescription></CardHeader>
-          <CardContent className="text-xs text-zinc-500">Tüm onay/red loglanır, KVKK metin versiyonu saklanır.</CardContent>
+          <CardHeader><CardTitle>Hakediş</CardTitle><CardDescription>Komisyon %20 canlı / %30 klon</CardDescription></CardHeader>
+          <CardContent className="text-xs text-zinc-500">Öğretmen başına oran ve periyot ayarlanır. Yakında.</CardContent>
         </Card>
       </div>
     </div>

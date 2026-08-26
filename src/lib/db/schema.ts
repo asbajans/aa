@@ -118,6 +118,13 @@ export const teacherProfiles = pgTable("teacher_profiles", {
   diplomaUrl: text("diploma_url"),
   isVerified: boolean("is_verified").default(false).notNull(),
   verifiedAt: timestamp("verified_at"),
+  // SaaS: Fiyatlandırma (öğretmen kendi belirler)
+  hourlyPriceCredits: integer("hourly_price_credits").default(60).notNull(), // 1 saat canlı ders = 60 kredi
+  enrollmentFeeCredits: integer("enrollment_fee_credits").default(0).notNull(), // öğrencinin öğretmene kaydolma ücreti (0 = ücretsiz başvuru)
+  // SaaS: Haftalık program (öğretmen müsaitlik)
+  weeklySchedule: jsonb("weekly_schedule").$type<{ day: number; start: string; end: string; }[]>().default([]),
+  bioDetail: text("bio_detail"),
+  experienceYears: integer("experience_years").default(0).notNull(),
   // Hakediş oranları
   commissionRateLive: integer("commission_rate_live").default(20).notNull(), // platform %20
   commissionRateAi: integer("commission_rate_ai").default(30).notNull(), // platform %30 AI'da daha yüksek (API maliyeti)
@@ -203,8 +210,9 @@ export const enrollments = pgTable(
     studentId: text("student_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    status: enrollmentStatusEnum("status").default("active").notNull(),
+    status: enrollmentStatusEnum("status").default("pending").notNull(),
     creditsPaid: integer("credits_paid").notNull(),
+    requestMessage: text("request_message"),
     enrolledAt: timestamp("enrolled_at").defaultNow().notNull(),
     completedAt: timestamp("completed_at"),
   },

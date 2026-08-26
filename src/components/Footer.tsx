@@ -25,12 +25,11 @@ export function Footer() {
             </div>
           </div>
           <div>
-            <div className="font-semibold text-white mb-3">Paneller</div>
+            <div className="font-semibold text-white mb-3">Destek</div>
             <div className="space-y-2 text-zinc-400">
-              <div><Link href="/ogrenci" className="hover:text-white">Öğrenci Paneli</Link></div>
-              <div><Link href="/ogretmen" className="hover:text-white">Öğretmen Paneli</Link></div>
-              <div><Link href="/ogretmen/ai-klon" className="hover:text-white">Akademi Klonu Stüdyosu</Link></div>
-              <div><Link href="/superadmin" className="hover:text-white">SüperAdmin</Link></div>
+              <div><Link href="/giris" className="hover:text-white">Giriş Yap</Link></div>
+              <div><Link href="/kayit" className="hover:text-white">Kayıt Ol</Link></div>
+              <div><Link href="/kesfet" className="hover:text-white">Nasıl Çalışır?</Link></div>
             </div>
           </div>
         </div>

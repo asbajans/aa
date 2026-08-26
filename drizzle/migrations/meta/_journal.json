@@ -15,6 +15,13 @@
       "when": 1787726487704,
       "tag": "0001_fluffy_shiver_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787728515776,
+      "tag": "0002_right_mindworm",
+      "breakpoints": true
     }
   ]
 }

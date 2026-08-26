@@ -1,33 +1,83 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { enrollments, classes, liveSessions, userCredits, users } from "@/lib/db/schema";
+import { auth } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Video, Bot, BookOpen } from "lucide-react";
-import { auth } from "@/lib/auth";
+import { Video, Bot, BookOpen, Clock } from "lucide-react";
 
 export default async function OgrenciPanel() {
   const session = await auth.api.getSession({ headers: await headers() }).catch(() => null);
   if (!session?.user) redirect("/giris");
-  if (session.user.role !== "student" && session.user.role !== "superadmin") {
-    redirect(session.user.role === "superadmin" ? "/superadmin" : "/ogretmen");
-  }
+  if (session.user.role !== "student" && session.user.role !== "superadmin") redirect("/ogretmen");
+
+  const myEnrolls = await db
+    .select({ id: enrollments.id, status: enrollments.status, classTitle: classes.title, classId: classes.id, teacherName: users.name })
+    .from(enrollments)
+    .leftJoin(classes, eq(enrollments.classId, classes.id))
+    .leftJoin(users, eq(classes.teacherId, users.id))
+    .where(eq(enrollments.studentId, session.user.id))
+    .limit(20)
+    .catch(() => []);
+
+  const upcoming = await db
+    .select({ id: liveSessions.id, title: liveSessions.title, scheduledAt: liveSessions.scheduledAt, room: liveSessions.livekitRoom, classTitle: classes.title })
+    .from(liveSessions)
+    .leftJoin(enrollments, eq(enrollments.classId, liveSessions.classId))
+    .leftJoin(classes, eq(liveSessions.classId, classes.id))
+    .where(eq(enrollments.studentId, session.user.id))
+    .orderBy(liveSessions.scheduledAt)
+    .limit(6)
+    .catch(() => []);
+
+  const credit = await db.select().from(userCredits).where(eq(userCredits.userId, session.user.id)).limit(1).then((r) => r[0]).catch(() => null);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-zinc-900">Öğrenci Paneli</h1>
-        <p className="text-zinc-600 text-sm">Hoş geldin {session.user.name} — sınıflarım, canlı dersler, Akademi Klonlarım, kredilerim.</p>
+        <p className="text-zinc-600 text-sm">Hoş geldin {session.user.name} — başvuruların, derslerin ve Akademi Klonun burada.</p>
       </div>
       <div className="grid md:grid-cols-3 gap-4">
-        <Card><CardHeader><CardTitle className="flex gap-2 items-center"><Video size={18} /> Canlı Dersler</CardTitle><CardDescription>Yaklaşan dersler, katılım, kayıt izleme</CardDescription></CardHeader><CardContent><Link href="/canli?room=demo-lgs-matematik"><Button variant="outline" className="w-full">Demo Derslere Katıl</Button></Link></CardContent></Card>
-        <Card><CardHeader><CardTitle className="flex gap-2 items-center"><Bot size={18} /> Akademi Klonlarım</CardTitle><CardDescription>Öğretmeninin Akademi Klonu ile 7/24 pratik</CardDescription></CardHeader><CardContent><Button className="w-full">Akademi Klonu ile Çalış</Button></CardContent></Card>
-        <Card><CardHeader><CardTitle className="flex gap-2 items-center"><BookOpen size={18} /> Sınıflarım</CardTitle><CardDescription>Kayıtlı sınıflar, ödevler, sertifikalar</CardDescription></CardHeader><CardContent><Badge>Hoş geldin kredisi: 200</Badge></CardContent></Card>
+        <Card><CardHeader><CardTitle className="flex gap-2 items-center"><BookOpen size={18} /> Kredi Bakiyem</CardTitle><CardDescription>Paket al, derslere harca</CardDescription></CardHeader><CardContent><div className="text-2xl font-black text-zinc-900">{credit?.balance ?? 0} kredi</div><Link href="/paketler"><Button variant="outline" size="sm" className="mt-2">Paket Al</Button></Link></CardContent></Card>
+        <Card><CardHeader><CardTitle className="flex gap-2 items-center"><Video size={18} /> Başvurularım</CardTitle><CardDescription>{myEnrolls.filter((e) => e.status === "pending").length} bekleyen • {myEnrolls.filter((e) => e.status === "active").length} aktif</CardDescription></CardHeader><CardContent><Link href="/kesfet"><Button className="w-full">Sınıf Keşfet</Button></Link></CardContent></Card>
+        <Card><CardHeader><CardTitle className="flex gap-2 items-center"><Bot size={18} /> Akademi Klonum</CardTitle><CardDescription>7/24 soru çözümü</CardDescription></CardHeader><CardContent><Link href="/kesfet"><Button variant="outline" className="w-full">Klonla Çalış</Button></Link></CardContent></Card>
       </div>
+
       <Card>
-        <CardHeader><CardTitle>Akademi Klonu — Fotoğraftan Soru Çöz</CardTitle><CardDescription>Kamera ile soru çek → Akademi Klonu sesle beyaz tahtada çözsün (mobil öncelikli)</CardDescription></CardHeader>
-        <CardContent className="text-sm text-zinc-500">Fotoğraf çek, Akademi Klonun anında adım adım anlatsın. Mobil uygulamada kamera izni yeterli.</CardContent>
+        <CardHeader><CardTitle className="flex gap-2 items-center"><BookOpen size={18} /> Sınıflarım ({myEnrolls.length})</CardTitle><CardDescription>Başvuru durumun — öğretmen onaylayınca aktif olur ve kredi düşer.</CardDescription></CardHeader>
+        <CardContent>
+          {myEnrolls.length === 0 ? <div className="text-sm text-zinc-500">Henüz başvurun yok — <Link href="/kesfet" className="underline">keşfet</Link> ve başvur.</div> : (
+            <div className="space-y-2">
+              {myEnrolls.map((e) => (
+                <div key={e.id} className="flex justify-between items-center rounded-xl border border-zinc-200 bg-white p-3">
+                  <div><div className="font-medium text-zinc-900">{e.classTitle}</div><div className="text-xs text-zinc-500">{e.teacherName} • {e.status}</div></div>
+                  <Badge className={e.status === "active" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : e.status === "pending" ? "bg-amber-50 text-amber-700 border-amber-200" : ""}>{e.status}</Badge>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="flex gap-2 items-center"><Clock size={16} /> Yaklaşan Derslerim</CardTitle><CardDescription>Öğretmeninin programı — canlı odaya katıl</CardDescription></CardHeader>
+        <CardContent>
+          {upcoming.length === 0 ? <div className="text-sm text-zinc-500">Henüz ders yok — öğretmen program oluşturduğunda burada görünecek.</div> : (
+            <div className="space-y-2">
+              {upcoming.map((s) => (
+                <div key={s.id} className="flex justify-between items-center rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                  <div><div className="font-medium text-zinc-900">{s.title} <span className="text-xs text-zinc-500">({s.classTitle})</span></div><div className="text-xs text-zinc-500">{new Date(s.scheduledAt).toLocaleString("tr-TR")}</div></div>
+                  <Link href={`/canli?room=${s.room}`}><Button size="sm">Katıl</Button></Link>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
       </Card>
     </div>
   );

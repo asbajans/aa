@@ -18,6 +18,7 @@ import {
   Sparkles,
   ShieldCheck,
   Clock,
+  Coins,
 } from "lucide-react";
 import { SignOutButton } from "@/components/SignOutButton";
 
@@ -69,16 +70,23 @@ const menuByRole: Record<Role, { label: string; items: MenuItem[] }[]> = {
   student: [
     { label: "Genel", items: [{ href: "/ogrenci", label: "Panel", icon: LayoutDashboard }] },
     {
+      label: "Keşfet",
+      items: [
+        { href: "/ogrenci/kesfet", label: "Sınıfları Keşfet", icon: BookOpen },
+        { href: "/ogrenci/ogretmenler", label: "Öğretmenler", icon: Users },
+      ],
+    },
+    {
       label: "Öğren",
       items: [
-        { href: "/kesfet", label: "Sınıfları Keşfet", icon: BookOpen },
         { href: "/ogrenci/siniflarim", label: "Sınıflarım", icon: GraduationCap },
         { href: "/ogrenci/program", label: "Programım", icon: Calendar },
       ],
     },
     {
-      label: "Destek",
+      label: "Hesabım",
       items: [
+        { href: "/ogrenci/krediler", label: "Kredilerim", icon: Coins },
         { href: "/paketler", label: "Paketler", icon: Package },
         { href: "/kvkk", label: "KVKK", icon: ShieldCheck },
       ],

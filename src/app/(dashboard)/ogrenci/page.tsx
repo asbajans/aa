@@ -46,15 +46,15 @@ export default async function OgrenciPanel() {
         <p className="text-zinc-600 text-sm">Hoş geldin {session.user.name} — başvuruların, derslerin ve Akademi Klonun burada.</p>
       </div>
       <div className="grid md:grid-cols-3 gap-4">
-        <Card><CardHeader><CardTitle className="flex gap-2 items-center"><BookOpen size={18} /> Kredi Bakiyem</CardTitle><CardDescription>Paket al, derslere harca</CardDescription></CardHeader><CardContent><div className="text-2xl font-black text-zinc-900">{credit?.balance ?? 0} kredi</div><Link href="/paketler"><Button variant="outline" size="sm" className="mt-2">Paket Al</Button></Link></CardContent></Card>
-        <Card><CardHeader><CardTitle className="flex gap-2 items-center"><Video size={18} /> Başvurularım</CardTitle><CardDescription>{myEnrolls.filter((e) => e.status === "pending").length} bekleyen • {myEnrolls.filter((e) => e.status === "active").length} aktif</CardDescription></CardHeader><CardContent><Link href="/kesfet"><Button className="w-full">Sınıf Keşfet</Button></Link></CardContent></Card>
-        <Card><CardHeader><CardTitle className="flex gap-2 items-center"><Bot size={18} /> Akademi Klonum</CardTitle><CardDescription>7/24 soru çözümü</CardDescription></CardHeader><CardContent><Link href="/kesfet"><Button variant="outline" className="w-full">Klonla Çalış</Button></Link></CardContent></Card>
+        <Card><CardHeader><CardTitle className="flex gap-2 items-center"><BookOpen size={18} /> Kredi Bakiyem</CardTitle><CardDescription>Paket al, derslere harca</CardDescription></CardHeader><CardContent><div className="text-2xl font-black text-zinc-900">{credit?.balance ?? 0} kredi</div><Link href="/ogrenci/krediler"><Button variant="outline" size="sm" className="mt-2">Kredi Detayı</Button></Link></CardContent></Card>
+        <Card><CardHeader><CardTitle className="flex gap-2 items-center"><Video size={18} /> Başvurularım</CardTitle><CardDescription>{myEnrolls.filter((e) => e.status === "pending").length} bekleyen • {myEnrolls.filter((e) => e.status === "active").length} aktif</CardDescription></CardHeader><CardContent><Link href="/ogrenci/kesfet"><Button className="w-full">Sınıf Keşfet</Button></Link></CardContent></Card>
+        <Card><CardHeader><CardTitle className="flex gap-2 items-center"><Bot size={18} /> Akademi Klonum</CardTitle><CardDescription>7/24 soru çözümü</CardDescription></CardHeader><CardContent><Link href="/ogrenci/ogretmenler"><Button variant="outline" className="w-full">Öğretmen Seç</Button></Link></CardContent></Card>
       </div>
 
       <Card>
         <CardHeader><CardTitle className="flex gap-2 items-center"><BookOpen size={18} /> Sınıflarım ({myEnrolls.length})</CardTitle><CardDescription>Başvuru durumun — öğretmen onaylayınca aktif olur ve kredi düşer.</CardDescription></CardHeader>
         <CardContent>
-          {myEnrolls.length === 0 ? <div className="text-sm text-zinc-500">Henüz başvurun yok — <Link href="/kesfet" className="underline">keşfet</Link> ve başvur.</div> : (
+          {myEnrolls.length === 0 ? <div className="text-sm text-zinc-500">Henüz başvurun yok — <Link href="/ogrenci/kesfet" className="underline">keşfet</Link> ve başvur.</div> : (
             <div className="space-y-2">
               {myEnrolls.map((e) => (
                 <div key={e.id} className="flex justify-between items-center rounded-xl border border-zinc-200 bg-white p-3">
@@ -87,7 +87,7 @@ export default async function OgrenciPanel() {
         <Card>
           <CardHeader><CardTitle className="flex gap-2 items-center"><User size={16} /> Aboneliklerim</CardTitle><CardDescription>Öğretmene abonelik — Akademi Klonu sınırlı erişim</CardDescription></CardHeader>
           <CardContent>
-            {subs.length === 0 ? <div className="text-sm text-zinc-500">Henüz aboneliğin yok — <Link href="/kesfet" className="underline">öğretmen keşfet</Link> ve abone ol.</div> : subs.map((s) => (
+            {subs.length === 0 ? <div className="text-sm text-zinc-500">Henüz aboneliğin yok — <Link href="/ogrenci/ogretmenler" className="underline">öğretmen keşfet</Link> ve abone ol.</div> : subs.map((s) => (
               <div key={s.id} className="flex justify-between items-center rounded-xl border border-zinc-200 bg-white p-3 mb-2">
                 <div><div className="font-medium text-zinc-900">{s.teacherName}</div><div className="text-xs text-zinc-500">{s.status} • {s.pricePaid} kredi</div></div>
                 <Badge>{s.status}</Badge>

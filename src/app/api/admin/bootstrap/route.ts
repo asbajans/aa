@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { sql } from "drizzle-orm";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import path from "path";
+import { randomBytes, scrypt } from "node:crypto";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { categories, packages, payoutSettings } from "@/lib/db/schema";
@@ -13,6 +14,7 @@ export const maxDuration = 120;
 // POST /api/admin/bootstrap
 // Header: x-bootstrap-key: <BOOTSTRAP_KEY env>
 // İlk deploy'da bir kez çağrılır: migration'ları uygular + demo hesapları oluşturur.
+// Zaten var olan demo hesapların şifresi demo değere sıfırlanır, rolü düzeltilir.
 // Sonraki çağrılar "already bootstrapped" döner (?force=1 ile zorlanabilir).
 
 const DEMO_USERS = [
@@ -22,6 +24,17 @@ const DEMO_USERS = [
   { name: "Mehmet Hoca", email: "demo.teacher2@akademi.biz.tr", password: "Demo123!", role: "teacher" },
   { name: "Zeynep Öğrenci", email: "demo.student2@akademi.biz.tr", password: "Demo123!", role: "student" },
 ];
+
+// better-auth ile aynı scrypt formatı: "salt:key" (hex)
+function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(16).toString("hex");
+  return new Promise((resolve, reject) => {
+    scrypt(password.normalize("NFKC"), salt, 64, { N: 16384, r: 16, p: 1, maxmem: 128 * 16384 * 16 * 2 }, (err, key) => {
+      if (err) reject(err);
+      else resolve(`${salt}:${key.toString("hex")}`);
+    });
+  });
+}
 
 export async function POST(req: Request) {
   const key = req.headers.get("x-bootstrap-key");
@@ -66,14 +79,29 @@ export async function POST(req: Request) {
         seededUsers.push({ email: u.email, role: u.role, status: "created" });
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e);
-        const status = /exist|taken/i.test(msg) ? "already-exists" : `error: ${msg.slice(0, 120)}`;
-        seededUsers.push({ email: u.email, role: u.role, status });
+        if (/exist|taken/i.test(msg)) {
+          // Zaten var: şifreyi demo değere sıfırla + rolü düzelt (demo hesaplar öngörülebilir olmalı)
+          const hashed = await hashPassword(u.password);
+          const upd = await db.execute(sql`
+            UPDATE accounts SET password = ${hashed}, updated_at = now()
+            WHERE provider_id = 'credential'
+              AND user_id = (SELECT id FROM users WHERE email = ${u.email} LIMIT 1)
+          `);
+          await db.execute(sql`
+            UPDATE users SET role = ${u.role}, name = ${u.name}, email_verified = true, updated_at = now()
+            WHERE email = ${u.email}
+          `);
+          const rowCount = (upd as unknown as { rowCount?: number }).rowCount ?? 0;
+          seededUsers.push({ email: u.email, role: u.role, status: rowCount > 0 ? "password-reset" : "account-missing" });
+        } else {
+          seededUsers.push({ email: u.email, role: u.role, status: `error: ${msg.slice(0, 120)}` });
+        }
       }
     }
     result.users = seededUsers;
 
-    // 4) Öğrenci/öğretmen profil + kredi + cüzdan (idempotent)
-    for (const u of seededUsers.filter((x) => x.status === "created")) {
+    // 4) Öğrenci/öğretmen profil + kredi + cüzdan (tüm demo kullanıcılar, idempotent)
+    for (const u of seededUsers.filter((x) => x.status !== "account-missing" && !x.status.startsWith("error"))) {
       const row = await db.execute(sql`SELECT id, role FROM users WHERE email = ${u.email} LIMIT 1`);
       const found = (row.rows as { id: string; role: string }[])[0];
       if (!found) continue;

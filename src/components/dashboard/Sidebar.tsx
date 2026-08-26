@@ -35,7 +35,7 @@ const menuByRole: Record<Role, { label: string; items: MenuItem[] }[]> = {
     {
       label: "Yönetim",
       items: [
-        { href: "/superadmin#kullanicilar", label: "Kullanıcılar", icon: Users },
+        { href: "/superadmin/kullanicilar", label: "Kullanıcılar", icon: Users },
         { href: "/superadmin/paketler", label: "Paketler", icon: Package },
         { href: "/superadmin/branslar", label: "Branşlar", icon: Layers },
         { href: "/superadmin/siniflar", label: "Sınıflar", icon: GraduationCap },
@@ -49,16 +49,17 @@ const menuByRole: Record<Role, { label: string; items: MenuItem[] }[]> = {
     {
       label: "Sınıflar",
       items: [
-        { href: "/ogretmen#siniflar", label: "Sınıflarım", icon: GraduationCap },
+        { href: "/ogretmen/siniflar", label: "Sınıflarım", icon: GraduationCap },
         { href: "/kesfet", label: "Keşfet", icon: BookOpen },
       ],
     },
     {
       label: "Dersler",
       items: [
-        { href: "/ogretmen#canli", label: "Canlı Dersler", icon: Video },
-        { href: "/ogretmen#program", label: "Programım", icon: Calendar },
-        { href: "/ogretmen#basvurular", label: "Başvurular", icon: Users },
+        { href: "/ogretmen/canli", label: "Canlı Dersler", icon: Video },
+        { href: "/ogretmen/program", label: "Programım", icon: Calendar },
+        { href: "/ogretmen/basvurular", label: "Başvurular", icon: Users },
+        { href: "/ogretmen/talepler", label: "1-1 Talepler", icon: Clock },
         { href: "/canli", label: "Canlı Oda", icon: Video },
       ],
     },
@@ -71,8 +72,8 @@ const menuByRole: Record<Role, { label: string; items: MenuItem[] }[]> = {
       label: "Öğren",
       items: [
         { href: "/kesfet", label: "Sınıfları Keşfet", icon: BookOpen },
-        { href: "/ogrenci#siniflarim", label: "Sınıflarım", icon: GraduationCap },
-        { href: "/ogrenci#program", label: "Programım", icon: Calendar },
+        { href: "/ogrenci/siniflarim", label: "Sınıflarım", icon: GraduationCap },
+        { href: "/ogrenci/program", label: "Programım", icon: Calendar },
       ],
     },
     {
